@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hoy · Al Día</title>
+    <meta name="description" content="Lo que tienes que entregar esta semana y lo que se te quedó atrasado." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div data-componente="navbar" data-activo="hoy"></div>
+
+    <main id="contenido" class="mx-auto max-w-5xl px-4 pt-10">
+      <!-- Cabecera: la fecha de hoy es lo primero que se ve (la rellena hoy.controller.js). -->
+      <section aria-labelledby="hoy-titulo">
+        <h1 id="hoy-titulo">Hoy</h1>
+        <p id="hoy-resumen" class="mt-3 text-xl text-suave" aria-live="polite">Cargando tus tareas…</p>
+      </section>
+
+      <!-- La semana, de lunes a domingo, con las entregas de cada día. -->
+      <section class="mt-12" aria-labelledby="semana-titulo">
+        <h2 id="semana-titulo" class="mb-4">Esta semana</h2>
+        <div id="semana" class="entrada-escalonada flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-7 md:overflow-visible"></div>
+      </section>
+
+      <!-- Atrasadas: solo se muestra si hay alguna. -->
+      <section id="seccion-atrasadas" class="mt-12" aria-labelledby="atrasadas-titulo" hidden>
+        <h2 id="atrasadas-titulo" class="mb-4">Atrasadas</h2>
+        <div id="lista-atrasadas" class="lista-filas"></div>
+      </section>
+
+      <section class="mt-12" aria-labelledby="proximas-titulo">
+        <div class="mb-4 flex items-end justify-between gap-4">
+          <h2 id="proximas-titulo">Lo que viene</h2>
+          <a href="/tareas.html">Ver todas las tareas</a>
+        </div>
+        <div id="lista-proximas" class="lista-filas"></div>
+        <div id="vacio-proximas" class="vacio" hidden>
+          <p class="mx-auto">No tienes tareas pendientes. Cuando recibas una entrega nueva, regístrala aquí.</p>
+          <a href="/tarea-nueva.html" class="btn mt-4">Registrar una tarea</a>
+        </div>
+      </section>
+    </main>
+
+    <div data-componente="pie"></div>
+    <script type="module" src="/src/controllers/hoy.controller.js"></script>
+  </body>
+</html>

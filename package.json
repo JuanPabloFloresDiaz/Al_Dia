@@ -1,0 +1,26 @@
+{
+  "name": "al-dia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Al Día: gestor de tareas académicas (UFG, Diseño y Desarrollo de Sitios Web, Ciclo II-2026)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "dayjs": "^1.11.23",
+    "dexie": "^4.4.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "tailwindcss": "^4.3.5",
+    "vite": "^8.3.8"
+  }
+}

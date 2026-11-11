@@ -1,0 +1,36 @@
+# Al Día con Docker.
+#
+#   Ver el sitio terminado (compilado, con nginx):   docker compose up -d --build
+#       -> http://localhost:8085
+#   Programar con recarga automática (Vite):         docker compose --profile dev up desarrollo
+#       -> http://localhost:5173
+#
+# Los puertos se pueden cambiar con variables de entorno, por ejemplo:  WEB_PORT=9000 docker compose up -d
+name: al-dia
+
+services:
+  web:
+    build:
+      context: .
+      target: produccion
+    image: al-dia:web
+    container_name: al-dia-web
+    ports:
+      - "${WEB_PORT:-8085}:80"
+    restart: unless-stopped
+
+  desarrollo:
+    profiles: ["dev"]          # solo arranca si se pide con --profile dev
+    build:
+      context: .
+      target: desarrollo
+    image: al-dia:dev
+    container_name: al-dia-dev
+    ports:
+      - "${DEV_PORT:-5173}:5173"
+    environment:
+      VITE_USE_POLLING: "true"  # necesario para que Docker detecte los cambios al guardar
+    volumes:
+      - .:/app                  # tu código dentro del contenedor
+      - /app/node_modules       # conserva las dependencias instaladas en la imagen
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

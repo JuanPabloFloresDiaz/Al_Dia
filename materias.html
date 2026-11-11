@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Materias · Al Día</title>
+    <meta name="description" content="Las materias a las que pertenecen tus tareas." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div data-componente="navbar" data-activo="materias"></div>
+
+    <main id="contenido" class="mx-auto max-w-5xl px-4 pt-10">
+      <h1>Materias</h1>
+      <p class="mt-2 text-suave">Cada tarea pertenece a una materia. Aquí las administras.</p>
+
+      <div class="mt-8 grid gap-10 md:grid-cols-[1fr_20rem]">
+        <section aria-labelledby="materias-titulo">
+          <h2 id="materias-titulo" class="sr-only">Lista de materias</h2>
+          <ul id="lista-materias" class="border-t border-linea"></ul>
+          <p id="vacio-materias" class="vacio" hidden>Aún no hay materias. Crea la primera con el formulario.</p>
+        </section>
+
+        <form id="form-materia" class="panel grid h-fit gap-4" novalidate>
+          <h2 class="text-xl">Nueva materia</h2>
+          <div class="campo">
+            <label for="materia-nombre">Nombre</label>
+            <input class="entrada" id="materia-nombre" type="text" maxlength="80" required placeholder="Ej.: Base de Datos Avanzadas" />
+          </div>
+          <div class="campo">
+            <label for="materia-codigo">Código corto</label>
+            <input class="entrada" id="materia-codigo" type="text" maxlength="8" required placeholder="Ej.: BDA" />
+            <p class="campo-ayuda">De 2 a 8 letras. Se muestra junto a cada tarea.</p>
+          </div>
+          <p class="campo-error" id="error-materia" role="alert" hidden></p>
+          <div><button type="submit" class="btn">Agregar materia</button></div>
+        </form>
+      </div>
+    </main>
+
+    <div data-componente="pie"></div>
+    <script type="module" src="/src/controllers/materias.controller.js"></script>
+  </body>
+</html>

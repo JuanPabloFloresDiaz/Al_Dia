@@ -1,0 +1,22 @@
+<!--
+  Menú principal. Uso en cada página:  <div data-componente="navbar" data-activo="tareas"></div>
+  `data-activo` debe ser: hoy | tareas | materias | ajustes   (marca el enlace de la página actual).
+  En computadora va arriba; en celular se convierte en una barra fija abajo.
+-->
+<a href="#contenido" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-superficie focus:p-3">Saltar al contenido</a>
+<header class="border-b border-linea bg-superficie">
+  <div class="mx-auto flex max-w-5xl items-center justify-between gap-6 px-4 py-3">
+    <a href="/index.html" class="flex items-center gap-2.5 font-titulo text-2xl font-bold text-tinta no-underline">
+      <img src="/favicon.svg" alt="" width="32" height="32" />
+      Al Día
+    </a>
+    <nav aria-label="Principal" data-activo="{{activo}}"
+         class="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:grid max-md:grid-cols-4 max-md:gap-1 max-md:border-t max-md:border-linea max-md:bg-superficie max-md:p-2 md:flex md:items-center md:gap-1">
+      <a class="enlace-menu" href="/index.html" data-pagina="hoy">Hoy</a>
+      <a class="enlace-menu" href="/tareas.html" data-pagina="tareas">Tareas</a>
+      <a class="enlace-menu" href="/materias.html" data-pagina="materias">Materias</a>
+      <a class="enlace-menu" href="/ajustes.html" data-pagina="ajustes">Ajustes</a>
+    </nav>
+    <a href="/tarea-nueva.html" class="btn max-md:hidden">Nueva tarea</a>
+  </div>
+</header>

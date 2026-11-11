@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nueva tarea · Al Día</title>
+    <meta name="description" content="Registra una tarea y, si es grande, divídela en pasos con fechas." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div data-componente="navbar" data-activo="tareas"></div>
+
+    <main id="contenido" class="mx-auto max-w-3xl px-4 pt-10">
+      <p><a href="/tareas.html">Volver a las tareas</a></p>
+      <h1 class="mt-3">Nueva tarea</h1>
+      <p class="mt-2 text-suave">
+        Escribe qué tienes que entregar y cuándo. Si es grande, divídela en partes y Al Día te propone una fecha para cada una.
+      </p>
+
+      <form id="form-tarea" class="panel mt-8 grid gap-6" novalidate>
+        <div class="campo">
+          <label for="tarea-titulo">¿Qué tienes que entregar?</label>
+          <input class="entrada" id="tarea-titulo" name="title" type="text" maxlength="120" required placeholder="Ej.: Leer el libro de Cálculo" />
+          <p class="campo-error" id="error-titulo" role="alert" hidden></p>
+        </div>
+
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="campo">
+            <label for="tarea-materia">Materia</label>
+            <select class="entrada" id="tarea-materia" name="subjectId" required></select>
+            <p class="campo-ayuda">¿No está? <a href="/materias.html">Agrégala en Materias</a>.</p>
+          </div>
+          <div class="campo">
+            <label for="tarea-tipo">Tipo de actividad</label>
+            <select class="entrada" id="tarea-tipo" name="type" required>
+              <option value="lectura">Lectura</option>
+              <option value="proyecto">Proyecto</option>
+              <option value="examen">Examen</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="campo sm:max-w-xs">
+          <label for="tarea-fecha">Fecha de entrega</label>
+          <input class="entrada" id="tarea-fecha" name="dueDate" type="date" required />
+          <p class="campo-error" id="error-fecha" role="alert" hidden></p>
+        </div>
+
+        <!-- División en partes: genera los pasos con fechas repartidas hasta la entrega. -->
+        <fieldset class="grid gap-4 border-t border-linea pt-6">
+          <legend class="font-titulo text-xl font-bold">Dividir en partes</legend>
+          <p class="campo-ayuda -mt-2">Útil para un libro de varios capítulos o un proyecto con secciones.</p>
+          <div class="grid gap-6 sm:grid-cols-2">
+            <div class="campo">
+              <label for="dividir-partes">¿En cuántas partes?</label>
+              <input class="entrada" id="dividir-partes" type="number" min="1" max="30" value="1" inputmode="numeric" />
+            </div>
+            <div class="campo">
+              <label for="dividir-nombre">Cómo se llama cada parte</label>
+              <input class="entrada" id="dividir-nombre" type="text" value="Capítulo" maxlength="40" />
+              <p class="campo-ayuda">Saldrá como «Capítulo 1», «Capítulo 2»…</p>
+            </div>
+          </div>
+          <div>
+            <button type="button" class="btn-secundario" id="btn-generar-pasos">Generar los pasos</button>
+          </div>
+          <ol id="pasos-formulario" class="grid gap-0" aria-live="polite"></ol>
+        </fieldset>
+
+        <div class="flex flex-wrap gap-3 border-t border-linea pt-6">
+          <button type="submit" class="btn">Guardar tarea</button>
+          <a href="/tareas.html" class="btn-secundario">Cancelar</a>
+        </div>
+      </form>
+    </main>
+
+    <div data-componente="pie"></div>
+    <script type="module" src="/src/controllers/tarea-nueva.controller.js"></script>
+  </body>
+</html>

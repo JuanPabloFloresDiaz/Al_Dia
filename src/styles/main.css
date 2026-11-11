@@ -1,0 +1,436 @@
+/*
+ * Estilos globales de Al Día.
+ *
+ * Cómo está organizado este archivo:
+ *   1. Tailwind y las FUENTES.
+ *   2. COLORES: variables claras y oscuras. Para cambiar un color, se cambia SOLO aquí.
+ *   3. Estilos BASE de la página.
+ *   4. COMPONENTES con nombre (botones, campos, chips, filas de tarea...). Se usan con `class="..."`.
+ *   5. Animaciones (con respeto a "reducir movimiento").
+ * El resto del diseño (márgenes, columnas, tamaños) se hace en el HTML con clases de Tailwind.
+ */
+@import 'tailwindcss';
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource/atkinson-hyperlegible/400.css';
+@import '@fontsource/atkinson-hyperlegible/700.css';
+
+/* ---------- 2. COLORES ---------- */
+/* Tema claro (por defecto). El tema oscuro se activa con <html data-theme="dark">. */
+:root {
+  --c-fondo: #f2f4f6;
+  --c-superficie: #ffffff;
+  --c-tinta: #1a1a1a;
+  --c-tinta-suave: #50555f;
+  --c-linea: #d5d9e0;
+  --c-acento: #2b44d9;
+  --c-acento-fuerte: #1d31ad;
+  --c-sobre-acento: #ffffff;
+  --c-resalte: #ffe45c;
+  --c-sobre-resalte: #1a1a1a;
+
+  --c-verde: #17653f;
+  --c-verde-fondo: #dcf2e5;
+  --c-amarillo: #7a4e00;
+  --c-amarillo-fondo: #ffeaa6;
+  --c-rojo: #a3201a;
+  --c-rojo-fondo: #fde0dd;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --c-fondo: #101215;
+  --c-superficie: #181b20;
+  --c-tinta: #e9ebef;
+  --c-tinta-suave: #a2a8b4;
+  --c-linea: #2c313a;
+  --c-acento: #97a8ff;
+  --c-acento-fuerte: #b9c4ff;
+  --c-sobre-acento: #0e1233;
+  --c-resalte: #f2d535;
+  --c-sobre-resalte: #1a1a1a;
+
+  --c-verde: #7fdca5;
+  --c-verde-fondo: #12301f;
+  --c-amarillo: #ffd36a;
+  --c-amarillo-fondo: #3a2c0a;
+  --c-rojo: #ff9a92;
+  --c-rojo-fondo: #3d1613;
+  color-scheme: dark;
+}
+
+/* Registra las variables en Tailwind para poder escribir clases como `bg-superficie` o `text-suave`. */
+@theme inline {
+  --color-fondo: var(--c-fondo);
+  --color-superficie: var(--c-superficie);
+  --color-tinta: var(--c-tinta);
+  --color-suave: var(--c-tinta-suave);
+  --color-linea: var(--c-linea);
+  --color-acento: var(--c-acento);
+  --color-resalte: var(--c-resalte);
+  --font-titulo: 'Bricolage Grotesque Variable', 'Atkinson Hyperlegible', sans-serif;
+  --font-texto: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+/* ---------- 3. BASE ---------- */
+@layer base {
+  html {
+    background: var(--c-fondo);
+    color: var(--c-tinta);
+    font-family: var(--font-texto);
+    font-size: 17px;
+    line-height: 1.55;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    min-height: 100dvh;
+    background: var(--c-fondo);
+    /* En móvil el menú va abajo y no debe tapar el final de la página. */
+    padding-bottom: 4.75rem;
+  }
+  @media (min-width: 48rem) {
+    body {
+      padding-bottom: 0;
+    }
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titulo);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.15rem;
+  }
+  p {
+    max-width: 68ch;
+  }
+  a {
+    color: var(--c-acento);
+    text-underline-offset: 3px;
+  }
+  /* Foco visible para quien navega con teclado. */
+  :focus-visible {
+    outline: 3px solid var(--c-acento);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* ---------- 4. COMPONENTES ---------- */
+@layer components {
+  /* Botones: .btn (principal), .btn-secundario, .btn-peligro */
+  .btn,
+  .btn-secundario,
+  .btn-peligro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.15rem;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    font-family: var(--font-titulo);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .btn {
+    background: var(--c-acento);
+    color: var(--c-sobre-acento);
+  }
+  .btn:hover {
+    background: var(--c-acento-fuerte);
+  }
+  .btn-secundario {
+    background: transparent;
+    border-color: var(--c-tinta);
+    color: var(--c-tinta);
+  }
+  .btn-secundario:hover {
+    background: var(--c-tinta);
+    color: var(--c-fondo);
+  }
+  .btn-peligro {
+    background: transparent;
+    border-color: var(--c-rojo);
+    color: var(--c-rojo);
+  }
+  .btn-peligro:hover {
+    background: var(--c-rojo);
+    color: var(--c-superficie);
+  }
+  .btn:disabled,
+  .btn-secundario:disabled,
+  .btn-peligro:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Formularios: <div class="campo"><label>..</label><input></div> */
+  .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .campo > label,
+  .campo > legend {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .campo-ayuda {
+    color: var(--c-tinta-suave);
+    font-size: 0.9rem;
+  }
+  .campo-error {
+    color: var(--c-rojo);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+  .entrada {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--c-superficie);
+    color: var(--c-tinta);
+    border: 2px solid var(--c-linea);
+    border-radius: 0.5rem;
+    font: inherit;
+  }
+  .entrada:hover {
+    border-color: var(--c-tinta-suave);
+  }
+  .entrada:focus-visible {
+    border-color: var(--c-acento);
+    outline-offset: 0;
+  }
+
+  /* Etiquetas de estado: el texto SIEMPRE dice el estado; el color solo lo refuerza. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.1rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .chip::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .chip-verde {
+    background: var(--c-verde-fondo);
+    color: var(--c-verde);
+  }
+  .chip-amarillo {
+    background: var(--c-amarillo-fondo);
+    color: var(--c-amarillo);
+  }
+  .chip-rojo {
+    background: var(--c-rojo-fondo);
+    color: var(--c-rojo);
+  }
+
+  /* Barra de progreso: <div class="barra" role="progressbar"><span style="width:40%"></span></div> */
+  .barra {
+    height: 0.55rem;
+    background: var(--c-linea);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .barra > span {
+    display: block;
+    height: 100%;
+    background: var(--c-acento);
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .barra-gruesa {
+    height: 0.85rem;
+  }
+
+  /* Lista de tareas: filas separadas por línea, con un borde de color según la urgencia. */
+  .lista-filas {
+    border-top: 1px solid var(--c-linea);
+  }
+  .fila-tarea {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem 1.5rem;
+    padding: 1rem 0.5rem 1rem 1rem;
+    border-bottom: 1px solid var(--c-linea);
+    border-left: 5px solid var(--c-linea);
+    color: inherit;
+    text-decoration: none;
+  }
+  @media (min-width: 40rem) {
+    .fila-tarea {
+      grid-template-columns: 1fr 13rem;
+      align-items: center;
+    }
+  }
+  .fila-tarea:hover {
+    background: var(--c-superficie);
+  }
+  .fila-tarea.urgencia-verde {
+    border-left-color: var(--c-verde);
+  }
+  .fila-tarea.urgencia-amarillo {
+    border-left-color: var(--c-amarillo);
+  }
+  .fila-tarea.urgencia-rojo {
+    border-left-color: var(--c-rojo);
+  }
+  .fila-tarea.terminada .fila-titulo {
+    color: var(--c-tinta-suave);
+    text-decoration: line-through;
+  }
+  .fila-titulo {
+    font-family: var(--font-titulo);
+    font-weight: 600;
+    font-size: 1.15rem;
+    line-height: 1.25;
+  }
+  .meta {
+    color: var(--c-tinta-suave);
+    font-size: 0.95rem;
+  }
+
+  /* Superficie sobre el fondo (formularios, paneles). */
+  .panel {
+    background: var(--c-superficie);
+    border: 1px solid var(--c-linea);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  /* Casilla del checklist, grande y clara. */
+  .casilla {
+    width: 1.5rem;
+    height: 1.5rem;
+    accent-color: var(--c-acento);
+    flex: none;
+    cursor: pointer;
+  }
+
+  /* Menú principal: el enlace de la página actual lleva la marca de resaltador. */
+  .enlace-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.9rem;
+    color: var(--c-tinta);
+    font-family: var(--font-titulo);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0.4rem;
+  }
+  .enlace-menu:hover {
+    background: var(--c-linea);
+  }
+  .enlace-menu[aria-current='page'] {
+    background: var(--c-resalte);
+    color: var(--c-sobre-resalte);
+  }
+
+  /* Día de la semana en el resumen de "Hoy". */
+  .dia-semana {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 9.5rem;
+    padding: 0.75rem;
+    /* En computadora los 7 días se reparten el ancho; en celular se desliza de lado. */
+    @media (min-width: 48rem) {
+      min-width: 0;
+    }
+    background: var(--c-superficie);
+    border: 1px solid var(--c-linea);
+    border-radius: 0.5rem;
+  }
+  .dia-semana.es-hoy {
+    border-color: var(--c-tinta);
+    border-width: 2px;
+  }
+  .dia-numero {
+    font-family: var(--font-titulo);
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .es-hoy .dia-numero {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    background: var(--c-resalte);
+    color: var(--c-sobre-resalte);
+    border-radius: 0.25rem;
+  }
+  .dia-tarea {
+    font-size: 0.9rem;
+    line-height: 1.25;
+    padding-left: 0.5rem;
+    border-left: 4px solid var(--c-linea);
+    color: var(--c-tinta);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .dia-tarea:hover {
+    text-decoration: underline;
+  }
+  .dia-tarea.urgencia-verde {
+    border-left-color: var(--c-verde);
+  }
+  .dia-tarea.urgencia-amarillo {
+    border-left-color: var(--c-amarillo);
+  }
+  .dia-tarea.urgencia-rojo {
+    border-left-color: var(--c-rojo);
+  }
+
+  /* Mensaje cuando no hay datos: invita a hacer algo. */
+  .vacio {
+    padding: 2.5rem 1rem;
+    border: 2px dashed var(--c-linea);
+    border-radius: 0.75rem;
+    text-align: center;
+    color: var(--c-tinta-suave);
+  }
+}
+
+/* ---------- 5. ANIMACIÓN (una sola, al abrir la página) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes entrar {
+    from {
+      opacity: 0;
+      transform: translateY(0.6rem);
+    }
+  }
+  /* Los días de la semana entran uno tras otro. Se activa con `class="entrada-escalonada"` en el contenedor. */
+  .entrada-escalonada > * {
+    animation: entrar 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  }
+  .entrada-escalonada > *:nth-child(2) { animation-delay: 0.05s; }
+  .entrada-escalonada > *:nth-child(3) { animation-delay: 0.1s; }
+  .entrada-escalonada > *:nth-child(4) { animation-delay: 0.15s; }
+  .entrada-escalonada > *:nth-child(5) { animation-delay: 0.2s; }
+  .entrada-escalonada > *:nth-child(6) { animation-delay: 0.25s; }
+  .entrada-escalonada > *:nth-child(7) { animation-delay: 0.3s; }
+}

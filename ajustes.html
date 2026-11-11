@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ajustes · Al Día</title>
+    <meta name="description" content="Tema, avisos y manejo de tus datos." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div data-componente="navbar" data-activo="ajustes"></div>
+
+    <main id="contenido" class="mx-auto max-w-3xl px-4 pt-10">
+      <h1>Ajustes</h1>
+
+      <form id="form-ajustes" class="panel mt-8 grid gap-8">
+        <fieldset class="campo">
+          <legend>Tema</legend>
+          <div class="mt-2 flex flex-wrap gap-6">
+            <label class="flex items-center gap-2"><input class="casilla" type="radio" name="theme" value="light" /> Claro</label>
+            <label class="flex items-center gap-2"><input class="casilla" type="radio" name="theme" value="dark" /> Oscuro</label>
+          </div>
+        </fieldset>
+
+        <div class="campo">
+          <label class="flex items-center gap-3 !font-normal">
+            <input class="casilla" type="checkbox" id="ajuste-avisos" name="notificationsEnabled" />
+            <span><strong>Mostrar avisos al abrir el sitio</strong><br /><span class="campo-ayuda">Un resumen de las entregas de la semana y de lo atrasado. Solo aparece con el sitio abierto.</span></span>
+          </label>
+        </div>
+
+        <div><button type="submit" class="btn">Guardar ajustes</button></div>
+        <p id="ajustes-estado" class="campo-ayuda" role="status" aria-live="polite"></p>
+      </form>
+
+      <section class="panel mt-8 grid gap-4" aria-labelledby="datos-titulo">
+        <h2 id="datos-titulo">Tus datos</h2>
+        <p class="text-suave">
+          Todo se guarda en este navegador, en este dispositivo. No hay cuenta ni servidor, así que lo que registres aquí no
+          aparece en tu teléfono ni lo ve nadie más.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <button type="button" class="btn-secundario" id="btn-exportar">Descargar copia de mis datos</button>
+          <button type="button" class="btn-peligro" id="btn-restablecer">Restablecer datos de ejemplo</button>
+        </div>
+      </section>
+    </main>
+
+    <div data-componente="pie"></div>
+    <script type="module" src="/src/controllers/ajustes.controller.js"></script>
+  </body>
+</html>

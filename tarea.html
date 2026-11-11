@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Detalle de tarea · Al Día</title>
+    <meta name="description" content="Avance, pasos y responsables de una tarea." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div data-componente="navbar" data-activo="tareas"></div>
+
+    <main id="contenido" class="mx-auto max-w-3xl px-4 pt-10">
+      <p><a href="/tareas.html">Volver a las tareas</a></p>
+
+      <div id="tarea-no-encontrada" class="vacio mt-6" hidden>
+        <p class="mx-auto">No encontramos esa tarea. Puede que ya la hayas eliminado.</p>
+        <a href="/tareas.html" class="btn mt-4">Ir a mis tareas</a>
+      </div>
+
+      <article id="tarea-detalle" hidden>
+        <header class="mt-3">
+          <h1 id="tarea-titulo">Tarea</h1>
+          <p id="tarea-meta" class="mt-3 text-suave"></p>
+          <div class="mt-3 flex flex-wrap gap-2" id="tarea-etiquetas"></div>
+        </header>
+
+        <section class="mt-8" aria-labelledby="progreso-titulo">
+          <div class="flex items-baseline justify-between gap-4">
+            <h2 id="progreso-titulo">Avance</h2>
+            <p id="tarea-progreso-texto" class="font-titulo text-3xl font-bold">0 %</p>
+          </div>
+          <div class="barra barra-gruesa mt-3" id="tarea-progreso" role="progressbar" aria-labelledby="progreso-titulo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span style="width: 0%"></span>
+          </div>
+        </section>
+
+        <section class="mt-10" aria-labelledby="pasos-titulo">
+          <h2 id="pasos-titulo">Pasos</h2>
+          <ul id="lista-pasos" class="mt-2 border-t border-linea"></ul>
+          <p id="vacio-pasos" class="vacio mt-4" hidden>Esta tarea todavía no tiene pasos. Agrega el primero aquí abajo.</p>
+
+          <form id="form-paso" class="panel mt-6 grid gap-4" novalidate>
+            <h3>Agregar un paso</h3>
+            <div class="campo">
+              <label for="paso-descripcion">¿Qué hay que hacer?</label>
+              <input class="entrada" id="paso-descripcion" type="text" maxlength="160" required placeholder="Ej.: Leer el capítulo 3" />
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="campo">
+                <label for="paso-fecha">Para cuándo</label>
+                <input class="entrada" id="paso-fecha" type="date" required />
+              </div>
+              <div class="campo">
+                <label for="paso-responsable">Responsable (opcional)</label>
+                <input class="entrada" id="paso-responsable" type="text" maxlength="80" placeholder="Nombre de quien lo hace" />
+              </div>
+            </div>
+            <div><button type="submit" class="btn">Agregar paso</button></div>
+          </form>
+        </section>
+
+        <section class="mt-10 flex flex-wrap gap-3 border-t border-linea pt-6" aria-label="Acciones de la tarea">
+          <button type="button" class="btn-secundario" id="btn-editar-tarea">Editar tarea</button>
+          <button type="button" class="btn-peligro" id="btn-eliminar-tarea">Eliminar tarea</button>
+        </section>
+      </article>
+    </main>
+
+    <div data-componente="pie"></div>
+    <script type="module" src="/src/controllers/tarea.controller.js"></script>
+  </body>
+</html>

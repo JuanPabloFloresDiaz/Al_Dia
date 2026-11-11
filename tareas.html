@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tareas · Al Día</title>
+    <meta name="description" content="Todas tus tareas académicas, ordenadas por fecha de entrega." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div data-componente="navbar" data-activo="tareas"></div>
+
+    <main id="contenido" class="mx-auto max-w-5xl px-4 pt-10">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1>Tareas</h1>
+          <p id="tareas-contador" class="mt-2 text-suave" aria-live="polite">Cargando…</p>
+        </div>
+        <a href="/tarea-nueva.html" class="btn">Nueva tarea</a>
+      </div>
+
+      <!-- Filtros: se conectan en tareas.controller.js (pendiente del equipo). -->
+      <form id="form-filtros" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" role="search" aria-label="Filtrar tareas">
+        <div class="campo">
+          <label for="filtro-texto">Buscar</label>
+          <input class="entrada" id="filtro-texto" type="search" placeholder="Parte del nombre" autocomplete="off" />
+        </div>
+        <div class="campo">
+          <label for="filtro-materia">Materia</label>
+          <select class="entrada" id="filtro-materia"><option value="">Todas</option></select>
+        </div>
+        <div class="campo">
+          <label for="filtro-tipo">Tipo</label>
+          <select class="entrada" id="filtro-tipo">
+            <option value="">Todos</option>
+            <option value="lectura">Lectura</option>
+            <option value="proyecto">Proyecto</option>
+            <option value="examen">Examen</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="filtro-estado">Estado</label>
+          <select class="entrada" id="filtro-estado">
+            <option value="">Todas</option>
+            <option value="pendientes">Pendientes</option>
+            <option value="atrasadas">Atrasadas</option>
+            <option value="terminadas">Terminadas</option>
+          </select>
+        </div>
+      </form>
+
+      <div id="lista-tareas" class="lista-filas mt-8"></div>
+      <div id="vacio-tareas" class="vacio mt-8" hidden>
+        <p class="mx-auto">Ninguna tarea coincide con lo que buscas.</p>
+      </div>
+    </main>
+
+    <div data-componente="pie"></div>
+    <script type="module" src="/src/controllers/tareas.controller.js"></script>
+  </body>
+</html>

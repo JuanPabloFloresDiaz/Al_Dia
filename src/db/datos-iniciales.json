@@ -1,0 +1,104 @@
+{
+  "database": "AlDiaDatabase",
+  "version": 1,
+  "stores": {
+    "subjects": "++id, name, code",
+    "tasks": "++id, subjectId, title, type, dueDate, urgencyLevel, progress, createdAt",
+    "steps": "++id, taskId, description, dueDate, completed, responsible",
+    "settings": "++id, theme, notificationsEnabled"
+  },
+  "seedData": {
+    "subjects": [
+      {
+        "id": 1,
+        "name": "Diseño y Desarrollo de Sitios Web",
+        "code": "DDW"
+      },
+      {
+        "id": 2,
+        "name": "Matemáticas Numéricas",
+        "code": "MNU"
+      },
+      {
+        "id": 3,
+        "name": "Base de Datos Avanzadas",
+        "code": "BDA"
+      }
+    ],
+    "tasks": [
+      {
+        "id": 1,
+        "subjectId": 1,
+        "title": "Desarrollo del sitio web Al Día",
+        "type": "proyecto",
+        "dueDate": "2026-11-30T23:59:59Z",
+        "urgencyLevel": "medium",
+        "progress": 40,
+        "createdAt": "2026-11-06T20:00:00Z"
+      },
+      {
+        "id": 2,
+        "subjectId": 2,
+        "title": "Investigación de métodos iterativos y bisección",
+        "type": "lectura",
+        "dueDate": "2026-11-09T23:59:59Z",
+        "urgencyLevel": "high",
+        "progress": 20,
+        "createdAt": "2026-11-05T10:00:00Z"
+      },
+      {
+        "id": 3,
+        "subjectId": 3,
+        "title": "Configuración y normalización de esquemas en IndexedDB",
+        "type": "examen",
+        "dueDate": "2026-11-07T12:00:00Z",
+        "urgencyLevel": "urgent",
+        "progress": 80,
+        "createdAt": "2026-11-01T08:00:00Z"
+      },
+      {
+        "id": 4,
+        "subjectId": 1,
+        "title": "Lectura del documento de arquitectura CSS y Tailwind",
+        "type": "lectura",
+        "dueDate": "2026-12-15T23:59:59Z",
+        "urgencyLevel": "low",
+        "progress": 0,
+        "createdAt": "2026-11-06T22:00:00Z"
+      }
+    ],
+    "steps": [
+      {
+        "id": 1,
+        "taskId": 1,
+        "description": "Capítulo 1: Planteamiento y objetivos",
+        "dueDate": "2026-11-10T23:59:59Z",
+        "completed": true,
+        "responsible": "Herbert Ayala"
+      },
+      {
+        "id": 2,
+        "taskId": 1,
+        "description": "Capítulo 2: Estructura de IndexedDB",
+        "dueDate": "2026-11-18T23:59:59Z",
+        "completed": false,
+        "responsible": "Juan Pablo Flores"
+      },
+      {
+        "id": 3,
+        "taskId": 2,
+        "description": "Leer sección de errores y convergencia",
+        "dueDate": "2026-11-08T23:59:59Z",
+        "completed": false,
+        "responsible": "Guillermo Menjívar"
+      }
+    ],
+    "settings": [
+      {
+        "id": 1,
+        "theme": "light",
+        "notificationsEnabled": true
+      }
+    ]
+  }
+}
