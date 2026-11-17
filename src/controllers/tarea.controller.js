@@ -2,17 +2,15 @@
  * Controlador del detalle de una tarea (tarea.html?id=3).
  *
  * Muestra la tarea, su avance y su checklist. Permite marcar pasos y agregar, editar y eliminar pasos.
- * PENDIENTE: editar y eliminar la tarea completa.
  */
 import { iniciarPagina } from '../main.js'
-import { obtenerTarea, recalcularProgreso } from '../services/tareas.service.js'
+import { obtenerTarea, recalcularProgreso, eliminarTarea } from '../services/tareas.service.js'
 import { obtenerMateria } from '../services/materias.service.js'
 import { listarPasosDeTarea, crearPaso, actualizarPaso, eliminarPaso } from '../services/pasos.service.js'
 import { pasoChecklist } from '../components/paso-checklist.js'
 import {
   NIVELES_URGENCIA,
   TIPOS_TAREA,
-  avisarPendiente,
   aValorDeInputFecha,
   calcularProgreso,
   calcularUrgencia,
@@ -81,9 +79,9 @@ async function dibujarTarea() {
 async function alMarcarPaso(evento) {
   const casilla = evento.target
   if (!casilla.matches('[data-paso-id]')) return
-    const id = Number(casilla.dataset.pasoId)
-    const cambios = {completed: casilla.checked}
-    await actualizarPaso(id, cambios)
+  const id = Number(casilla.dataset.pasoId)
+  const cambios = {completed: casilla.checked}
+  await actualizarPaso(id, cambios)
 
   await recalcularProgreso(tarea.id)
   await dibujarTarea()
@@ -173,15 +171,15 @@ function filaPasoEnEdicion(paso) {
  * @returns {void}
  */
 function alEditarTarea() {
-  // Bloque 2b
-  avisarPendiente('Editar la tarea')
+  window.location.href = '/tarea-nueva.html?id=' + tarea.id
 }
 
 /**
- * Se ejecuta al pulsar "Eliminar tarea".
- * @returns {void}
+ * Se ejecuta al pulsar "Eliminar tarea": pide confirmación, borra la tarea con sus pasos y vuelve a la lista.
+ * @returns {Promise<void>}
  */
-function alEliminarTarea() {
-  // Bloque 2b
-  avisarPendiente('Eliminar la tarea')
+async function alEliminarTarea() {
+  if (!confirm('¿Eliminar la tarea y todos sus pasos?')) return
+  await eliminarTarea(tarea.id)
+  window.location.href = '/tareas.html'
 }
