@@ -12,6 +12,7 @@
  * @property {string} createdAt Fecha en que se registró (ISO, UTC).
  */
 import { db } from '../db/db.js'
+import { calcularProgreso } from '../utils/utils.js'
 
 /**
  * Lista todas las tareas, la entrega más cercana primero.
@@ -69,4 +70,18 @@ export function eliminarTarea(id) {
     await db.steps.where('taskId').equals(Number(id)).delete()
     await db.tasks.delete(Number(id))
   })
+}
+
+/**
+ * Recalcula el avance de una tarea a partir de sus pasos y lo guarda en `progress`.
+ * Llamarla SIEMPRE que se marque, agregue o elimine un paso: así el avance que muestran
+ * las listas (Hoy, Tareas) nunca queda desactualizado.
+ * @param {number} tareaId Id de la tarea.
+ * @returns {Promise<number>} El avance nuevo, de 0 a 100.
+ */
+export async function recalcularProgreso(tareaId) {
+  const pasos = await db.steps.where('taskId').equals(Number(tareaId)).toArray()
+  const progress = calcularProgreso(pasos)
+  await db.tasks.update(Number(tareaId), { progress })
+  return progress
 }
