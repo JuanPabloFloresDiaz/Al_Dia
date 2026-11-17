@@ -1,12 +1,20 @@
 /**
  * Controlador de la página "Nueva tarea" (tarea-nueva.html).
- *
- * ESTADO: el formulario se muestra y el desplegable de materias se llena.
- * PENDIENTE para el equipo: generar los pasos, validar y guardar (3 funciones marcadas con TODO).
+ * Genera los pasos con el divisor, valida el formulario y guarda la tarea con sus pasos.
  */
 import { iniciarPagina } from '../main.js'
 import { listarMaterias } from '../services/materias.service.js'
-import { avisarPendiente, aValorDeInputFecha, ahora, escaparHtml } from '../utils/utils.js'
+import { crearTarea } from '../services/tareas.service.js'
+import { crearPasos } from '../services/pasos.service.js'
+import {
+  aValorDeInputFecha,
+  ahora,
+  deInputAFechaIso,
+  diasRestantes,
+  dividirEnPartes,
+  escaparHtml,
+  mostrarAviso,
+} from '../utils/utils.js'
 
 await iniciarPagina()
 
@@ -31,35 +39,106 @@ async function llenarSelectorDeMaterias() {
 }
 
 /**
- * Se ejecuta al pulsar "Generar los pasos": crea la lista de pasos con fechas repartidas
- * entre hoy y la fecha de entrega, y la muestra en #pasos-formulario.
+ * Se ejecuta al pulsar "Generar los pasos": reparte la tarea en partes y las muestra como filas editables.
  * @returns {void}
  */
 function alGenerarPasos() {
-  // TODO(equipo): dividir la tarea en partes (objetivo 3 del PDF).
-  //   1. Lee #dividir-partes (cuántas), #dividir-nombre (prefijo) y #tarea-fecha (entrega).
-  //   2. Reparte las fechas en partes IGUALES entre hoy y la entrega. Ejemplo: 10 días y 5 partes ->
-  //      una cada 2 días; la última parte cae el día de la entrega. (Day.js: `ahora().add(n, 'day')`).
-  //   3. Dibuja cada paso como una fila de #pasos-formulario con: descripción ("Capítulo 1"),
-  //      una fecha editable (<input type="date">) y un responsable (opcional). El usuario podrá ajustar las fechas.
-  //   4. Borra la línea de `avisarPendiente` de abajo.
-  avisarPendiente('Generar los pasos de una tarea')
+  const partes = Number(document.getElementById('dividir-partes').value)
+  const nombre = document.getElementById('dividir-nombre').value.trim() || 'Parte'
+  const fechaEntrega = document.getElementById('tarea-fecha').value
+
+  if (!fechaEntrega) return mostrarAviso('Primero elige la fecha de entrega.', 'error')
+  if (diasRestantes(fechaEntrega) < 0) return mostrarAviso('La fecha de entrega ya pasó.', 'error')
+  if (!(partes >= 1 && partes <= 30)) return mostrarAviso('Elige entre 1 y 30 partes.', 'error')
+
+  const pasos = dividirEnPartes(partes, nombre, fechaEntrega)
+  document.getElementById('pasos-formulario').innerHTML = pasos.map(filaPasoEditable).join('')
 }
 
 /**
- * Se ejecuta al enviar el formulario ("Guardar tarea").
+ * HTML de un paso generado: nombre, fecha y responsable, los tres editables antes de guardar.
+ * @param {{description: string, fecha: string}} paso Paso que devuelve `dividirEnPartes`.
+ * @returns {string} HTML de la fila.
+ */
+function filaPasoEditable(paso) {
+  return `
+    <li class="grid gap-2 border-b border-linea py-3 sm:grid-cols-3" data-paso>
+      <input class="entrada" name="paso-descripcion" value="${escaparHtml(paso.description)}" aria-label="Nombre del paso" />
+      <input class="entrada" name="paso-fecha" type="date" value="${paso.fecha}" aria-label="Fecha sugerida" />
+      <input class="entrada" name="paso-responsable" placeholder="Responsable (opcional)" aria-label="Responsable" />
+    </li>`
+}
+
+/**
+ * Se ejecuta al enviar el formulario: valida, guarda la tarea y sus pasos, y abre la tarea nueva.
  * @param {SubmitEvent} evento Evento del formulario.
  * @returns {Promise<void>}
  */
 async function alGuardarTarea(evento) {
   evento.preventDefault()
-  // TODO(equipo): validar y guardar la tarea con sus pasos.
-  //   1. Validar: título obligatorio y fecha de entrega obligatoria. Si falta algo, muestra el texto en
-  //      #error-titulo o #error-fecha (quita el atributo `hidden`) y no sigas.
-  //   2. Crear la tarea con `crearTarea({ subjectId, title, type, dueDate, urgencyLevel })` de tareas.service.js
-  //      (`subjectId` debe ser número; `urgencyLevel` sale de `calcularUrgencia(dueDate)` de utils.js).
-  //   3. Si hay pasos generados, guardarlos con `crearPasos([...])` de pasos.service.js usando el id de la tarea nueva.
-  //   4. Ir a la tarea: `window.location.href = '/tarea.html?id=' + idNuevo`.
-  //   5. Borra la línea de `avisarPendiente` de abajo.
-  avisarPendiente('Guardar tarea')
+  const title = formulario.elements.title.value.trim()
+  const fecha = formulario.elements.dueDate.value
+
+  ocultarError('error-titulo')
+  ocultarError('error-fecha')
+  let valido = true
+
+  if (!title) {
+    mostrarError('error-titulo', 'Escribe qué tienes que entregar.')
+    valido = false
+  }
+  if (!fecha){
+    mostrarError('error-fecha', 'Elige la fecha de entrega.')
+    valido = false
+  } else if (diasRestantes(fecha) < 0){
+    mostrarError('error-fecha', 'La fecha de entrega ya pasó.')
+    valido = false
+  }
+
+  if (!valido) return
+
+  try {
+    const idNuevo = await crearTarea({
+      subjectId: Number(formulario.elements.subjectId.value),
+      title,
+      type: formulario.elements.type.value,
+      dueDate: deInputAFechaIso(fecha),
+    })
+
+    // Los pasos se leen de las filas, no de lo que generó el divisor: el usuario pudo editarlos.
+    const filas = document.querySelectorAll('#pasos-formulario [data-paso]')
+    const pasos = [...filas].map((fila) => ({
+      taskId: idNuevo,
+      description: fila.querySelector('[name="paso-descripcion"]').value.trim(),
+      dueDate: deInputAFechaIso(fila.querySelector('[name="paso-fecha"]').value),
+      responsible: fila.querySelector('[name="paso-responsable"]').value.trim(),
+    }))
+    if (pasos.length) await crearPasos(pasos)
+
+    window.location.href = '/tarea.html?id=' + idNuevo
+  } catch (error) {
+    console.error(error)
+    mostrarAviso('No se pudo guardar la tarea. Intenta de nuevo.', 'error')
+  }
+}
+
+/**
+ * Muestra un mensaje de error debajo de un campo.
+ * @param {string} id Id del párrafo de error. Ej.: "error-titulo".
+ * @param {string} texto Mensaje a mostrar.
+ * @returns {void}
+ */
+function mostrarError(id, texto) {
+  const parrafo = document.getElementById(id)
+  parrafo.textContent = texto
+  parrafo.hidden = false
+}
+
+/**
+ * Oculta el mensaje de error de un campo.
+ * @param {string} id Id del párrafo de error.
+ * @returns {void}
+ */
+function ocultarError(id) {
+  document.getElementById(id).hidden = true
 }

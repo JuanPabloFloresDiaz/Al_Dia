@@ -16,6 +16,7 @@ import {
   ahora,
   aFecha,
   capitalizar,
+  calcularUrgencia,
   diasDeLaSemana,
   diasRestantes,
   escaparHtml,
@@ -82,7 +83,7 @@ function dibujarSemana() {
             delDia.length
               ? delDia
                   .map((t) => {
-                    const color = (NIVELES_URGENCIA[t.urgencyLevel] ?? NIVELES_URGENCIA.low).color
+                    const color = NIVELES_URGENCIA[calcularUrgencia(t.dueDate)].color
                     return `<a class="dia-tarea urgencia-${color}" href="/tarea.html?id=${t.id}">${escaparHtml(t.title)}</a>`
                   })
                   .join('')

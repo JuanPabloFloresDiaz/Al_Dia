@@ -7,6 +7,7 @@
 import {
   NIVELES_URGENCIA,
   TIPOS_TAREA,
+  calcularUrgencia,
   escaparHtml,
   textoVencimiento,
   formatearFecha,
@@ -20,7 +21,7 @@ import {
  * @returns {string} HTML de la fila.
  */
 export function filaTarea(tarea, materia) {
-  const urgencia = NIVELES_URGENCIA[tarea.urgencyLevel] ?? NIVELES_URGENCIA.low
+  const urgencia = NIVELES_URGENCIA[calcularUrgencia(tarea.dueDate)]
   const terminada = tarea.progress >= 100
   return `
     <a class="fila-tarea urgencia-${urgencia.color} ${terminada ? 'terminada' : ''}" href="/tarea.html?id=${tarea.id}">

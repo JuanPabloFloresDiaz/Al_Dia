@@ -12,6 +12,7 @@ import { pasoChecklist } from '../components/paso-checklist.js'
 import {
   NIVELES_URGENCIA,
   TIPOS_TAREA,
+  calcularUrgencia,
   avisarPendiente,
   aValorDeInputFecha,
   calcularProgreso,
@@ -46,7 +47,7 @@ if (!tarea) {
  */
 async function dibujarTarea() {
   const [materia, pasos] = await Promise.all([obtenerMateria(tarea.subjectId), listarPasosDeTarea(tarea.id)])
-  const urgencia = NIVELES_URGENCIA[tarea.urgencyLevel] ?? NIVELES_URGENCIA.low
+  const urgencia = NIVELES_URGENCIA[calcularUrgencia(tarea.dueDate)]
   // El avance sale de los pasos; si la tarea no tiene pasos, se usa el valor guardado.
   const progreso = pasos.length ? calcularProgreso(pasos) : tarea.progress
 

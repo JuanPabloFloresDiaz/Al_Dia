@@ -96,6 +96,37 @@ export function esMismoDia(a, b) {
   return dayjs(a).isSame(dayjs(b), 'day')
 }
 
+/**
+ * Convierte el valor de un <input type="date"> a texto ISO en UTC, tomando el FINAL de ese día
+ * en hora local. Sin esto, "30 de noviembre" se guardaría como 29 en El Salvador.
+ * @param {string} valor Valor del input, formato "AAAA-MM-DD".
+ * @returns {string} Ej.: "2026-12-01T05:59:59.999Z" (= 30 de nov a las 23:59 en El Salvador).
+ */
+export function deInputAFechaIso(valor) {
+  return dayjs(valor).endOf('day').toISOString()
+}
+
+/**
+ * Reparte una tarea en partes con fechas iguales entre hoy y la entrega.
+ * La última parte cae el día de la entrega.
+ * @param {number} partes Cuántas partes. Ej.: 5.
+ * @param {string} nombre Cómo se llama cada parte. Ej.: "Capítulo".
+ * @param {string} fechaEntrega Valor del input, formato "AAAA-MM-DD".
+ * @returns {{description: string, fecha: string}[]} Ej.: [{ description: "Capítulo 1", fecha: "2026-11-18" }, ...]
+ */
+export function dividirEnPartes(partes, nombre, fechaEntrega) {
+  const hoy = ahora().startOf('day')
+  const entrega = dayjs(fechaEntrega).startOf('day')
+  const totalDias = entrega.diff(hoy, 'day')
+  const lista = []
+
+  for (let i = 1; i <= partes; i++) {
+    const dias = Math.round((totalDias / partes) * i)
+    lista.push({ description: `${nombre} ${i}`, fecha: hoy.add(dias, 'day').format('YYYY-MM-DD') })
+  }
+  return lista
+}
+
 /* ------------------------------------------------------------------ */
 /* 2) URGENCIA Y PROGRESO                                             */
 /* ------------------------------------------------------------------ */
