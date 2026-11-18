@@ -110,12 +110,6 @@ function dibujarLista(idContenedor, lista) {
  * @returns {void}
  */
 function mostrarResumenSemanal() {
-  console.log('[resumen]', {
-  avisosActivados: ajustes.notificationsEnabled,
-  entregasSemana: entregasDeLaSemana.length,
-  atrasadas: atrasadas.length,
-  yaMostrado: sessionStorage.getItem('resumen-mostrado'),
-})
   if (!ajustes.notificationsEnabled) return
   if (!entregasDeLaSemana.length && !atrasadas.length) return
 
