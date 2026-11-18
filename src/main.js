@@ -8,6 +8,7 @@ import './styles/main.css'
 import { montarComponentes } from './utils/componentes.js'
 import { abrirBaseDeDatos } from './db/db.js'
 import { obtenerAjustes } from './services/ajustes.service.js'
+import { iniciarCampana } from './components/campana.js'
 
 /**
  * Aplica el tema visual a toda la página.
@@ -39,4 +40,6 @@ export async function iniciarPagina() {
   await abrirBaseDeDatos()
   const ajustes = await obtenerAjustes()
   aplicarTema(ajustes.theme)
+  // Un fallo en los avisos no debe impedir que la página cargue.
+  iniciarCampana().catch((error) => console.error('[avisos]', error))
 }

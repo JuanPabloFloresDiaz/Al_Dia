@@ -60,7 +60,8 @@ async function dibujarTarea() {
     `${materia?.name ?? 'Sin materia'} · ${TIPOS_TAREA[tarea.type] ?? 'Otro'} · Entrega el ${formatearFecha(tarea.dueDate, 'D [de] MMMM [de] YYYY')}`
   document.getElementById('tarea-etiquetas').innerHTML = `
     <span class="chip chip-${urgencia.color}">${urgencia.etiqueta}</span>
-    <span class="chip" style="background:var(--c-linea)">${escaparHtml(textoVencimiento(tarea.dueDate))}</span>`
+    <span class="chip" style="background:var(--c-linea)">${escaparHtml(textoVencimiento(tarea.dueDate))}</span>
+    ${tarea.notify ? '<span class="chip" style="background:var(--c-linea)">Avisos activados</span>' : ''}`
 
   document.getElementById('tarea-progreso-texto').textContent = `${progreso} %`
   const barra = document.getElementById('tarea-progreso')

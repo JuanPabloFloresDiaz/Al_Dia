@@ -17,6 +17,30 @@
       <a class="enlace-menu" href="/materias.html" data-pagina="materias">Materias</a>
       <a class="enlace-menu" href="/ajustes.html" data-pagina="ajustes">Ajustes</a>
     </nav>
-    <a href="/tarea-nueva.html" class="btn max-md:hidden">Nueva tarea</a>
+    <div class="flex items-center gap-3">
+      <!-- Campanita de avisos: la maneja src/components/campana.js -->
+      <div class="relative" id="campana">
+        <button type="button" id="campana-boton" class="relative flex h-11 w-11 items-center justify-center rounded-full border-2 border-linea bg-superficie text-tinta hover:border-tinta"
+                aria-label="Avisos" aria-haspopup="true" aria-expanded="false" aria-controls="campana-panel">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+          </svg>
+          <span id="campana-contador" hidden class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--c-rojo)] px-1 text-xs font-bold text-white">0</span>
+        </button>
+        <div id="campana-panel" hidden role="region" aria-label="Avisos de tareas"
+             class="absolute right-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-lg border-2 border-tinta bg-superficie shadow-lg">
+          <div class="flex items-center justify-between gap-2 border-b border-linea px-4 py-2">
+            <strong class="font-titulo text-lg">Avisos</strong>
+            <button type="button" id="campana-borrar" class="text-sm underline" hidden>Borrar todos</button>
+          </div>
+          <ul id="campana-lista" class="max-h-96 overflow-y-auto"></ul>
+          <p id="campana-vacio" class="px-4 py-4 text-sm text-tinta-suave">No tienes avisos. Activa «Avisarme del avance» al crear una tarea.</p>
+          <div class="border-t border-linea px-4 py-3">
+            <button type="button" id="campana-permiso" class="btn-secundario !min-h-9 !px-3 !text-sm" hidden>Activar avisos del sistema</button>
+          </div>
+        </div>
+      </div>
+      <a href="/tarea-nueva.html" class="btn max-md:hidden">Nueva tarea</a>
+    </div>
   </div>
 </header>
