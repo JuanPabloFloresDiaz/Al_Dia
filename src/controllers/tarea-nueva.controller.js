@@ -102,6 +102,20 @@ function filaPasoEditable(paso) {
  * @param {SubmitEvent} evento Evento del formulario.
  * @returns {Promise<void>}
  */
+
+/**
+ * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien
+ * guarda la tarea con sus pasos y abre la tarea nueva.
+ * @param {SubmitEvent} evento Evento del formulario.
+ * @returns {Promise<void>}
+ */
+/**
+ * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien guarda.
+ * En modo crear, guarda la tarea con sus pasos; en modo edición, actualiza la tarea.
+ * Al terminar abre el detalle de la tarea.
+ * @param {SubmitEvent} evento Evento del formulario.
+ * @returns {Promise<void>}
+ */
 async function alGuardarTarea(evento) {
   evento.preventDefault()
   const title = formulario.elements.title.value.trim()
@@ -126,6 +140,21 @@ async function alGuardarTarea(evento) {
 
   if (!valido) return
 
+  // Los pasos se leen y se validan ANTES de guardar nada: si uno está mal, no se guarda ni la tarea.
+  // (Se leen de las filas, no de lo que generó el divisor: el usuario pudo editarlos.)
+  // En modo edición no hay filas de pasos, así que esta parte no hace nada.
+  const filas = document.querySelectorAll('#pasos-formulario [data-paso]')
+  const pasos = []
+  for (let i = 0; i < filas.length; i++) {
+    const description = filas[i].querySelector('[name="paso-descripcion"]').value.trim()
+    const fechaPaso = filas[i].querySelector('[name="paso-fecha"]').value
+    const responsible = filas[i].querySelector('[name="paso-responsable"]').value.trim()
+
+    if (!description || !fechaPaso) return mostrarAviso(`El paso ${i + 1} necesita un nombre y una fecha.`, 'error')
+
+    pasos.push({ description, dueDate: deInputAFechaIso(fechaPaso), responsible })
+  }
+
   const datos = {
     subjectId: Number(formulario.elements.subjectId.value),
     title,
@@ -133,6 +162,7 @@ async function alGuardarTarea(evento) {
     dueDate: deInputAFechaIso(fecha),
   }
 
+  // Todo es válido: recién ahora se guarda.
   try {
     if (tareaEnEdicion) {
       await actualizarTarea(tareaEnEdicion.id, datos)
@@ -141,16 +171,7 @@ async function alGuardarTarea(evento) {
     }
 
     const idNuevo = await crearTarea(datos)
-
-    // Los pasos se leen de las filas, no de lo que generó el divisor: el usuario pudo editarlos.
-    const filas = document.querySelectorAll('#pasos-formulario [data-paso]')
-    const pasos = [...filas].map((fila) => ({
-      taskId: idNuevo,
-      description: fila.querySelector('[name="paso-descripcion"]').value.trim(),
-      dueDate: deInputAFechaIso(fila.querySelector('[name="paso-fecha"]').value),
-      responsible: fila.querySelector('[name="paso-responsable"]').value.trim(),
-    }))
-    if (pasos.length) await crearPasos(pasos)
+    if (pasos.length) await crearPasos(pasos.map((p) => ({ ...p, taskId: idNuevo })))
 
     window.location.href = '/tarea.html?id=' + idNuevo
   } catch (error) {
