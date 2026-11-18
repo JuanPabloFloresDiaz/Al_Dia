@@ -74,6 +74,13 @@ function filaPasoEditable(paso) {
  * @param {SubmitEvent} evento Evento del formulario.
  * @returns {Promise<void>}
  */
+
+/**
+ * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien
+ * guarda la tarea con sus pasos y abre la tarea nueva.
+ * @param {SubmitEvent} evento Evento del formulario.
+ * @returns {Promise<void>}
+ */
 async function alGuardarTarea(evento) {
   evento.preventDefault()
   const title = formulario.elements.title.value.trim()
@@ -87,16 +94,31 @@ async function alGuardarTarea(evento) {
     mostrarError('error-titulo', 'Escribe qué tienes que entregar.')
     valido = false
   }
-  if (!fecha){
+  if (!fecha) {
     mostrarError('error-fecha', 'Elige la fecha de entrega.')
     valido = false
-  } else if (diasRestantes(fecha) < 0){
+  } else if (diasRestantes(fecha) < 0) {
     mostrarError('error-fecha', 'La fecha de entrega ya pasó.')
     valido = false
   }
 
   if (!valido) return
 
+  // Los pasos se leen y se validan ANTES de guardar nada: si uno está mal, no se guarda ni la tarea.
+  // (Se leen de las filas, no de lo que generó el divisor: el usuario pudo editarlos.)
+  const filas = document.querySelectorAll('#pasos-formulario [data-paso]')
+  const pasos = []
+  for (let i = 0; i < filas.length; i++) {
+    const description = filas[i].querySelector('[name="paso-descripcion"]').value.trim()
+    const fechaPaso = filas[i].querySelector('[name="paso-fecha"]').value
+    const responsible = filas[i].querySelector('[name="paso-responsable"]').value.trim()
+
+    if (!description || !fechaPaso) return mostrarAviso(`El paso ${i + 1} necesita un nombre y una fecha.`, 'error')
+
+    pasos.push({ description, dueDate: deInputAFechaIso(fechaPaso), responsible })
+  }
+
+  // Todo es válido: recién ahora se guarda.
   try {
     const idNuevo = await crearTarea({
       subjectId: Number(formulario.elements.subjectId.value),
@@ -104,16 +126,7 @@ async function alGuardarTarea(evento) {
       type: formulario.elements.type.value,
       dueDate: deInputAFechaIso(fecha),
     })
-
-    // Los pasos se leen de las filas, no de lo que generó el divisor: el usuario pudo editarlos.
-    const filas = document.querySelectorAll('#pasos-formulario [data-paso]')
-    const pasos = [...filas].map((fila) => ({
-      taskId: idNuevo,
-      description: fila.querySelector('[name="paso-descripcion"]').value.trim(),
-      dueDate: deInputAFechaIso(fila.querySelector('[name="paso-fecha"]').value),
-      responsible: fila.querySelector('[name="paso-responsable"]').value.trim(),
-    }))
-    if (pasos.length) await crearPasos(pasos)
+    if (pasos.length) await crearPasos(pasos.map((p) => ({ ...p, taskId: idNuevo })))
 
     window.location.href = '/tarea.html?id=' + idNuevo
   } catch (error) {
