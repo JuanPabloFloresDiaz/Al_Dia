@@ -239,14 +239,6 @@ export function leerParametro(nombre) {
 /* ------------------------------------------------------------------ */
 
 /**
- * Muestra un mensaje breve en la parte de abajo de la pantalla y lo quita solo a los 4 segundos.
- * Úsala para confirmar acciones ("Tarea guardada") o explicar errores ("Falta la fecha").
- *
- * @param {string} texto Mensaje a mostrar.
- * @param {'info'|'error'} [tipo='info'] "error" lo muestra en rojo.
- * @returns {void}
- */
-/**
  * Muestra un mensaje en la parte de abajo de la pantalla.
  * Normalmente se quita solo a los 4 segundos. Con `{ fijo: true }` se queda hasta que el usuario
  * lo cierra con su botón (útil para avisos importantes, como el resumen de la semana).
