@@ -18,7 +18,9 @@ import {
   escaparHtml,
   leerParametro,
   mostrarAviso,
+  pedirPermisoAvisosDelSistema,
 } from '../utils/utils.js'
+import { hitoActual } from '../services/avisos.service.js'
 
 await iniciarPagina()
 
@@ -34,6 +36,10 @@ const tareaEnEdicion = idEdicion ? await obtenerTarea(idEdicion) : null
 if (tareaEnEdicion) prepararModoEdicion(tareaEnEdicion)
 
 formulario.addEventListener('submit', alGuardarTarea)
+// Al activar los avisos se pide el permiso del navegador (hay que hacerlo desde un cambio del usuario).
+formulario.elements.notify.addEventListener('change', (evento) => {
+  if (evento.target.checked) pedirPermisoAvisosDelSistema()
+})
 document.getElementById('btn-generar-pasos').addEventListener('click', alGenerarPasos)
 
 /**
@@ -60,6 +66,7 @@ function prepararModoEdicion(tarea) {
   formulario.elements.subjectId.value = tarea.subjectId
   formulario.elements.type.value = tarea.type
   formulario.elements.dueDate.value = aValorDeInputFecha(tarea.dueDate)
+  formulario.elements.notify.checked = Boolean(tarea.notify)
   formulario.querySelector('fieldset').hidden = true
   formulario.querySelector('button[type="submit"]').textContent = 'Guardar cambios'
   formulario.querySelector('a.btn-secundario').href = '/tarea.html?id=' + tarea.id
@@ -147,7 +154,9 @@ async function alGuardarTarea(evento) {
     title,
     type: formulario.elements.type.value,
     dueDate: deInputAFechaIso(fecha),
+    notify: formulario.elements.notify.checked,
   }
+  datos.lastMilestone = hitoInicial(datos)
 
   // Todo es válido: recién ahora se guarda.
   try {
@@ -165,6 +174,19 @@ async function alGuardarTarea(evento) {
     console.error(error)
     mostrarAviso('No se pudo guardar la tarea. Intenta de nuevo.', 'error')
   }
+}
+
+/**
+ * Último hito de aviso que se da por "ya avisado" al guardar. Una tarea nueva empieza en 0.
+ * Al editar, si se activan los avisos o se cambia la fecha, se parte del hito actual para no
+ * lanzar de golpe avisos de porcentajes que ya pasaron.
+ * @param {{notify: boolean, dueDate: string}} datos Datos que se van a guardar.
+ * @returns {number} Hito inicial (0, 25, 33, 50, 66, 75 o 100).
+ */
+function hitoInicial(datos) {
+  if (!tareaEnEdicion) return 0
+  const cambio = datos.notify !== Boolean(tareaEnEdicion.notify) || datos.dueDate !== tareaEnEdicion.dueDate
+  return cambio ? hitoActual(tareaEnEdicion.createdAt, datos.dueDate) : (tareaEnEdicion.lastMilestone ?? 0)
 }
 
 /**

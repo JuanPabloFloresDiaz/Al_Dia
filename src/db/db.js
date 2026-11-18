@@ -9,6 +9,8 @@
  *   tasks     -> tareas             (id, subjectId, title, type, dueDate, urgencyLevel, progress, createdAt)
  *   steps     -> pasos / checklist  (id, taskId, description, dueDate, completed, responsible)
  *   settings  -> ajustes            (id, theme, notificationsEnabled)
+ *   notifications -> avisos         (id, taskId, milestone, level, title, message, read, createdAt)   [versión 2]
+ *   tasks (v2) guarda además `notify` (avisos activados) y `lastMilestone` (último hito avisado).
  *
  * Sintaxis de Dexie: "++id" = id autoincremental; los demás nombres son campos con ÍNDICE
  * (solo los indexados se pueden usar en `.where('campo')`; los otros se guardan igual).
@@ -29,6 +31,12 @@ export const NOMBRE_BD = datosIniciales.database
 export const db = new Dexie(NOMBRE_BD)
 
 db.version(datosIniciales.version).stores(datosIniciales.stores)
+
+// Versión 2: bandeja de avisos (la campanita). `read` es 0 (sin leer) o 1 (leído), porque IndexedDB
+// no permite indexar booleanos. Las tareas guardan `notify` y `lastMilestone` sin necesidad de índice.
+db.version(2).stores({
+  notifications: '++id, taskId, read, createdAt',
+})
 
 /**
  * Se ejecuta UNA sola vez: cuando la base de datos se crea por primera vez en un navegador.
