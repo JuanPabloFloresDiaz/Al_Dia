@@ -97,19 +97,6 @@ function filaPasoEditable(paso) {
 }
 
 /**
- * Se ejecuta al enviar el formulario: valida y guarda. En modo crear, guarda la tarea con sus pasos;
- * en modo edición, actualiza la tarea. Al terminar abre el detalle de la tarea.
- * @param {SubmitEvent} evento Evento del formulario.
- * @returns {Promise<void>}
- */
-
-/**
- * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien
- * guarda la tarea con sus pasos y abre la tarea nueva.
- * @param {SubmitEvent} evento Evento del formulario.
- * @returns {Promise<void>}
- */
-/**
  * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien guarda.
  * En modo crear, guarda la tarea con sus pasos; en modo edición, actualiza la tarea.
  * Al terminar abre el detalle de la tarea.
