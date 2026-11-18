@@ -246,17 +246,41 @@ export function leerParametro(nombre) {
  * @param {'info'|'error'} [tipo='info'] "error" lo muestra en rojo.
  * @returns {void}
  */
-export function mostrarAviso(texto, tipo = 'info') {
+/**
+ * Muestra un mensaje en la parte de abajo de la pantalla.
+ * Normalmente se quita solo a los 4 segundos. Con `{ fijo: true }` se queda hasta que el usuario
+ * lo cierra con su botón (útil para avisos importantes, como el resumen de la semana).
+ *
+ * @param {string} texto Mensaje a mostrar.
+ * @param {'info'|'error'} [tipo='info'] "error" lo muestra en rojo.
+ * @param {{fijo?: boolean}} [opciones={}] `fijo: true` = no desaparece solo y lleva un botón "Cerrar".
+ * @returns {void}
+ */
+export function mostrarAviso(texto, tipo = 'info', { fijo = false } = {}) {
   const aviso = document.createElement('div')
   aviso.setAttribute('role', 'status')
   aviso.className =
-    'fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-lg border-2 px-4 py-3 font-bold shadow-lg md:bottom-6 ' +
+    'fixed inset-x-4 bottom-24 z-50 mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg border-2 px-4 py-3 font-bold shadow-lg md:bottom-6 ' +
     (tipo === 'error'
       ? 'border-[var(--c-rojo)] bg-[var(--c-rojo-fondo)] text-[var(--c-rojo)]'
       : 'border-tinta bg-superficie text-tinta')
-  aviso.textContent = texto
+
+  const mensaje = document.createElement('span')
+  mensaje.textContent = texto
+  aviso.append(mensaje)
+
+  if (fijo) {
+    const cerrar = document.createElement('button')
+    cerrar.type = 'button'
+    cerrar.textContent = 'Cerrar'
+    cerrar.className = (tipo === 'error' ? 'btn-peligro' : 'btn-secundario') + ' shrink-0 !min-h-9 !px-3 !text-sm'
+    cerrar.addEventListener('click', () => aviso.remove())
+    aviso.append(cerrar)
+  } else {
+    setTimeout(() => aviso.remove(), 4000)
+  }
+
   document.body.append(aviso)
-  setTimeout(() => aviso.remove(), 4000)
 }
 
 /**
