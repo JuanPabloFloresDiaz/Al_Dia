@@ -1,10 +1,13 @@
 /**
  * Controlador de la página "Nueva tarea" (tarea-nueva.html).
  * Genera los pasos con el divisor, valida el formulario y guarda la tarea con sus pasos.
+ *
+ * Modo edición: con `tarea-nueva.html?id=3` la misma página edita la tarea 3
+ * (llena el formulario con sus datos y oculta el divisor).
  */
 import { iniciarPagina } from '../main.js'
 import { listarMaterias } from '../services/materias.service.js'
-import { crearTarea } from '../services/tareas.service.js'
+import { crearTarea, obtenerTarea, actualizarTarea } from '../services/tareas.service.js'
 import { crearPasos } from '../services/pasos.service.js'
 import {
   aValorDeInputFecha,
@@ -13,6 +16,7 @@ import {
   diasRestantes,
   dividirEnPartes,
   escaparHtml,
+  leerParametro,
   mostrarAviso,
 } from '../utils/utils.js'
 
@@ -23,6 +27,11 @@ const formulario = document.getElementById('form-tarea')
 await llenarSelectorDeMaterias()
 // La fecha de entrega empieza en una semana a partir de hoy (el usuario la cambia).
 document.getElementById('tarea-fecha').value = aValorDeInputFecha(ahora().add(7, 'day'))
+
+/** Si la dirección trae ?id=, la página edita esa tarea en vez de crear una nueva. */
+const idEdicion = leerParametro('id')
+const tareaEnEdicion = idEdicion ? await obtenerTarea(idEdicion) : null
+if (tareaEnEdicion) prepararModoEdicion(tareaEnEdicion)
 
 formulario.addEventListener('submit', alGuardarTarea)
 document.getElementById('btn-generar-pasos').addEventListener('click', alGenerarPasos)
@@ -36,6 +45,24 @@ async function llenarSelectorDeMaterias() {
   document.getElementById('tarea-materia').innerHTML = materias
     .map((m) => `<option value="${m.id}">${escaparHtml(m.name)} (${escaparHtml(m.code)})</option>`)
     .join('')
+}
+
+/**
+ * Convierte la página en "Editar tarea": llena el formulario con los datos guardados y oculta
+ * el divisor (los pasos de una tarea que ya existe se editan desde su detalle).
+ * @param {import('../services/tareas.service.js').Tarea} tarea Tarea a editar.
+ * @returns {void}
+ */
+function prepararModoEdicion(tarea) {
+  document.title = 'Editar tarea · Al Día'
+  document.querySelector('h1').textContent = 'Editar tarea'
+  formulario.elements.title.value = tarea.title
+  formulario.elements.subjectId.value = tarea.subjectId
+  formulario.elements.type.value = tarea.type
+  formulario.elements.dueDate.value = aValorDeInputFecha(tarea.dueDate)
+  formulario.querySelector('fieldset').hidden = true
+  formulario.querySelector('button[type="submit"]').textContent = 'Guardar cambios'
+  formulario.querySelector('a.btn-secundario').href = '/tarea.html?id=' + tarea.id
 }
 
 /**
@@ -70,14 +97,9 @@ function filaPasoEditable(paso) {
 }
 
 /**
- * Se ejecuta al enviar el formulario: valida, guarda la tarea y sus pasos, y abre la tarea nueva.
- * @param {SubmitEvent} evento Evento del formulario.
- * @returns {Promise<void>}
- */
-
-/**
- * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien
- * guarda la tarea con sus pasos y abre la tarea nueva.
+ * Se ejecuta al enviar el formulario: valida la tarea y TODOS sus pasos, y solo si todo está bien guarda.
+ * En modo crear, guarda la tarea con sus pasos; en modo edición, actualiza la tarea.
+ * Al terminar abre el detalle de la tarea.
  * @param {SubmitEvent} evento Evento del formulario.
  * @returns {Promise<void>}
  */
@@ -97,7 +119,8 @@ async function alGuardarTarea(evento) {
   if (!fecha) {
     mostrarError('error-fecha', 'Elige la fecha de entrega.')
     valido = false
-  } else if (diasRestantes(fecha) < 0) {
+  } else if (!tareaEnEdicion && diasRestantes(fecha) < 0) {
+    // Solo al CREAR: una tarea atrasada que ya existe se debe poder editar (por ejemplo, corregir el título).
     mostrarError('error-fecha', 'La fecha de entrega ya pasó.')
     valido = false
   }
@@ -106,6 +129,7 @@ async function alGuardarTarea(evento) {
 
   // Los pasos se leen y se validan ANTES de guardar nada: si uno está mal, no se guarda ni la tarea.
   // (Se leen de las filas, no de lo que generó el divisor: el usuario pudo editarlos.)
+  // En modo edición no hay filas de pasos, así que esta parte no hace nada.
   const filas = document.querySelectorAll('#pasos-formulario [data-paso]')
   const pasos = []
   for (let i = 0; i < filas.length; i++) {
@@ -118,14 +142,22 @@ async function alGuardarTarea(evento) {
     pasos.push({ description, dueDate: deInputAFechaIso(fechaPaso), responsible })
   }
 
+  const datos = {
+    subjectId: Number(formulario.elements.subjectId.value),
+    title,
+    type: formulario.elements.type.value,
+    dueDate: deInputAFechaIso(fecha),
+  }
+
   // Todo es válido: recién ahora se guarda.
   try {
-    const idNuevo = await crearTarea({
-      subjectId: Number(formulario.elements.subjectId.value),
-      title,
-      type: formulario.elements.type.value,
-      dueDate: deInputAFechaIso(fecha),
-    })
+    if (tareaEnEdicion) {
+      await actualizarTarea(tareaEnEdicion.id, datos)
+      window.location.href = '/tarea.html?id=' + tareaEnEdicion.id
+      return
+    }
+
+    const idNuevo = await crearTarea(datos)
     if (pasos.length) await crearPasos(pasos.map((p) => ({ ...p, taskId: idNuevo })))
 
     window.location.href = '/tarea.html?id=' + idNuevo

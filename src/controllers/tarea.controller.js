@@ -1,24 +1,24 @@
 /**
  * Controlador del detalle de una tarea (tarea.html?id=3).
  *
- * ESTADO: muestra la tarea, su avance y su checklist (solo lectura).
- * PENDIENTE para el equipo: marcar pasos, agregar pasos, editar y eliminar (TODO abajo).
+ * Muestra la tarea, su avance y su checklist. Permite marcar pasos y agregar, editar y eliminar pasos.
  */
 import { iniciarPagina } from '../main.js'
-import { obtenerTarea } from '../services/tareas.service.js'
+import { obtenerTarea, recalcularProgreso, eliminarTarea } from '../services/tareas.service.js'
 import { obtenerMateria } from '../services/materias.service.js'
-import { listarPasosDeTarea } from '../services/pasos.service.js'
+import { listarPasosDeTarea, crearPaso, actualizarPaso, eliminarPaso } from '../services/pasos.service.js'
 import { pasoChecklist } from '../components/paso-checklist.js'
 import {
   NIVELES_URGENCIA,
   TIPOS_TAREA,
-  calcularUrgencia,
-  avisarPendiente,
   aValorDeInputFecha,
   calcularProgreso,
+  calcularUrgencia,
+  deInputAFechaIso,
   escaparHtml,
   formatearFecha,
   leerParametro,
+  mostrarAviso,
   textoVencimiento,
   ahora,
 } from '../utils/utils.js'
@@ -26,6 +26,8 @@ import {
 await iniciarPagina()
 
 const tarea = await obtenerTarea(leerParametro('id'))
+/** Pasos de la tarea tal como se dibujaron la última vez (los usa la edición de un paso). */
+let pasos = []
 
 if (!tarea) {
   document.getElementById('tarea-no-encontrada').hidden = false
@@ -42,11 +44,12 @@ if (!tarea) {
 
 /**
  * Dibuja el título, las etiquetas, la barra de avance y la lista de pasos de la tarea.
- * Se puede volver a llamar después de cambiar algo para refrescar la pantalla.
+ * Se vuelve a llamar después de cada cambio para refrescar la pantalla.
  * @returns {Promise<void>}
  */
 async function dibujarTarea() {
-  const [materia, pasos] = await Promise.all([obtenerMateria(tarea.subjectId), listarPasosDeTarea(tarea.id)])
+  const [materia, lista] = await Promise.all([obtenerMateria(tarea.subjectId), listarPasosDeTarea(tarea.id)])
+  pasos = lista
   const urgencia = NIVELES_URGENCIA[calcularUrgencia(tarea.dueDate)]
   // El avance sale de los pasos; si la tarea no tiene pasos, se usa el valor guardado.
   const progreso = pasos.length ? calcularProgreso(pasos) : tarea.progress
@@ -69,51 +72,98 @@ async function dibujarTarea() {
 }
 
 /**
- * Se ejecuta al marcar o desmarcar la casilla de un paso.
+ * Se ejecuta al marcar o desmarcar la casilla de un paso: lo guarda y actualiza el avance.
  * @param {Event} evento Evento `change` de la lista (la casilla está en `evento.target`).
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function alMarcarPaso(evento) {
+async function alMarcarPaso(evento) {
   const casilla = evento.target
   if (!casilla.matches('[data-paso-id]')) return
-  // TODO(equipo): guardar el paso y actualizar el avance.
-  //   1. `actualizarPaso(Number(casilla.dataset.pasoId), { completed: casilla.checked })` de pasos.service.js.
-  //   2. Recalcular el avance con `calcularProgreso(pasos)` y guardarlo en la tarea con
-  //      `actualizarTarea(tarea.id, { progress })` de tareas.service.js.
-  //   3. Llamar a `await dibujarTarea()` para refrescar la barra y la lista.
-  //   4. Borra las líneas de `casilla.checked` y `avisarPendiente` de abajo.
-  casilla.checked = !casilla.checked
-  avisarPendiente('Marcar un paso como completado')
-}
+  const id = Number(casilla.dataset.pasoId)
+  const cambios = {completed: casilla.checked}
+  await actualizarPaso(id, cambios)
 
-/**
- * Se ejecuta al hacer clic dentro de la lista de pasos (sirve para el botón "Editar" de cada paso).
- * @param {MouseEvent} evento Evento de clic.
- * @returns {void}
- */
-function alPulsarEnPaso(evento) {
-  const boton = evento.target.closest('[data-accion="editar-paso"]')
-  if (!boton) return
-  // TODO(equipo): editar un paso (descripción, fecha y responsable) y eliminarlo.
-  //   Id del paso: `Number(boton.dataset.pasoId)`. Servicios: `actualizarPaso` y `eliminarPaso` (pasos.service.js).
-  //   Puedes reemplazar la fila por campos editables, o abrir un formulario aparte.
-  avisarPendiente('Editar un paso')
+  await recalcularProgreso(tarea.id)
+  await dibujarTarea()
 }
 
 /**
  * Se ejecuta al enviar el formulario "Agregar un paso".
  * @param {SubmitEvent} evento Evento del formulario.
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function alAgregarPaso(evento) {
+async function alAgregarPaso(evento) {
   evento.preventDefault()
-  // TODO(equipo): crear el paso nuevo.
-  //   1. Validar que #paso-descripcion y #paso-fecha no estén vacíos.
-  //   2. `crearPaso({ taskId: tarea.id, description, dueDate, responsible })` de pasos.service.js
-  //      (convierte la fecha del input con `new Date(valor).toISOString()`).
-  //   3. Recalcular el avance (igual que en alMarcarPaso) y llamar a `await dibujarTarea()`.
-  //   4. Limpiar el formulario (`evento.target.reset()`) y borrar la línea de `avisarPendiente`.
-  avisarPendiente('Agregar un paso')
+  const description = document.getElementById('paso-descripcion').value.trim()
+  const fecha = document.getElementById('paso-fecha').value
+  const responsible = document.getElementById('paso-responsable').value.trim()
+
+  if (!description || !fecha) return mostrarAviso('Escribe qué hay que hacer y para cuándo.', 'error')
+
+  await crearPaso({ taskId: tarea.id, description, dueDate: deInputAFechaIso(fecha), responsible })
+  await recalcularProgreso(tarea.id)
+  await dibujarTarea()
+
+  evento.target.reset()
+  document.getElementById('paso-fecha').value = aValorDeInputFecha(ahora())
+  mostrarAviso('Paso agregado')
+}
+
+/**
+ * Se ejecuta al hacer clic dentro de la lista de pasos. Atiende los botones de cada paso:
+ * Editar, y en modo edición Guardar, Cancelar y Eliminar.
+ * @param {MouseEvent} evento Evento de clic.
+ * @returns {Promise<void>}
+ */
+async function alPulsarEnPaso(evento) {
+  const boton = evento.target.closest('[data-accion]')
+  if (!boton) return
+  const id = Number(boton.dataset.pasoId)
+  const fila = boton.closest('li')
+  const accion = boton.dataset.accion
+
+  if (accion === 'editar-paso') {
+    const paso = pasos.find((p) => p.id === id)
+    fila.outerHTML = filaPasoEnEdicion(paso)
+  } else if (accion === 'cancelar-paso') {
+    await dibujarTarea()
+  } else if (accion === 'guardar-paso') {
+    const description = fila.querySelector('[name="descripcion"]').value.trim()
+    const fecha = fila.querySelector('[name="fecha"]').value
+    const responsible = fila.querySelector('[name="responsable"]').value.trim()
+    if (!description || !fecha) return mostrarAviso('El paso necesita un nombre y una fecha.', 'error')
+
+    await actualizarPaso(id, { description, dueDate: deInputAFechaIso(fecha), responsible })
+    await dibujarTarea()
+    mostrarAviso('Paso actualizado')
+  } else if (accion === 'eliminar-paso') {
+    if (!confirm('¿Eliminar este paso?')) return
+    await eliminarPaso(id)
+    await recalcularProgreso(tarea.id)
+    await dibujarTarea()
+    mostrarAviso('Paso eliminado')
+  }
+}
+
+/**
+ * HTML de un paso en modo edición: sus tres datos editables y los botones Guardar, Cancelar y Eliminar.
+ * @param {import('../services/pasos.service.js').Paso} paso Paso a editar.
+ * @returns {string} HTML de la fila.
+ */
+function filaPasoEnEdicion(paso) {
+  return `
+    <li class="grid gap-2 border-b border-linea py-3">
+      <input class="entrada" name="descripcion" value="${escaparHtml(paso.description)}" maxlength="160" aria-label="Qué hay que hacer" />
+      <div class="grid gap-2 sm:grid-cols-2">
+        <input class="entrada" name="fecha" type="date" value="${aValorDeInputFecha(paso.dueDate)}" aria-label="Para cuándo" />
+        <input class="entrada" name="responsable" value="${escaparHtml(paso.responsible)}" maxlength="80" placeholder="Responsable (opcional)" aria-label="Responsable" />
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn !min-h-9 !px-3 !text-sm" data-accion="guardar-paso" data-paso-id="${paso.id}">Guardar</button>
+        <button type="button" class="btn-secundario !min-h-9 !px-3 !text-sm" data-accion="cancelar-paso" data-paso-id="${paso.id}">Cancelar</button>
+        <button type="button" class="btn-peligro !min-h-9 !px-3 !text-sm" data-accion="eliminar-paso" data-paso-id="${paso.id}">Eliminar</button>
+      </div>
+    </li>`
 }
 
 /**
@@ -121,17 +171,15 @@ function alAgregarPaso(evento) {
  * @returns {void}
  */
 function alEditarTarea() {
-  // TODO(equipo): editar título, tipo, materia y fecha. Puede reutilizar la forma de tarea-nueva.html
-  //   (por ejemplo `tarea-nueva.html?id=3` en modo edición) y guardar con `actualizarTarea` de tareas.service.js.
-  avisarPendiente('Editar la tarea')
+  window.location.href = '/tarea-nueva.html?id=' + tarea.id
 }
 
 /**
- * Se ejecuta al pulsar "Eliminar tarea".
- * @returns {void}
+ * Se ejecuta al pulsar "Eliminar tarea": pide confirmación, borra la tarea con sus pasos y vuelve a la lista.
+ * @returns {Promise<void>}
  */
-function alEliminarTarea() {
-  // TODO(equipo): pedir confirmación (`confirm('¿Eliminar la tarea y todos sus pasos?')`) y, si acepta,
-  //   llamar a `eliminarTarea(tarea.id)` de tareas.service.js (borra también los pasos) y volver a '/tareas.html'.
-  avisarPendiente('Eliminar la tarea')
+async function alEliminarTarea() {
+  if (!confirm('¿Eliminar la tarea y todos sus pasos?')) return
+  await eliminarTarea(tarea.id)
+  window.location.href = '/tareas.html'
 }
