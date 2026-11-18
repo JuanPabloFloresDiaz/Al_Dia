@@ -4,8 +4,7 @@
  * Qué hace: lee las tareas y las materias, y dibuja el resumen del día, la semana
  * (lunes a domingo), las tareas atrasadas y las que vienen.
  *
- * ESTADO: terminado (solo lectura). Pendiente para el equipo: el aviso emergente de
- * "resumen de la semana" al abrir el sitio (ver TODO al final).
+ *Al abrir el sitio muestra una vez por sesión el aviso con el resumen de la semana.
  */
 import { iniciarPagina } from '../main.js'
 import { listarTareas } from '../services/tareas.service.js'
@@ -14,16 +13,17 @@ import { obtenerAjustes } from '../services/ajustes.service.js'
 import { filaTarea } from '../components/fila-tarea.js'
 import {
   ahora,
-  aFecha,
-  capitalizar,
   calcularUrgencia,
+  capitalizar,
   diasDeLaSemana,
   diasRestantes,
   escaparHtml,
   esMismoDia,
   formatearFecha,
+  mostrarAviso,
   NIVELES_URGENCIA,
   pluralizar,
+  textoVencimiento,
 } from '../utils/utils.js'
 
 await iniciarPagina()
@@ -46,7 +46,7 @@ dibujarLista('lista-atrasadas', atrasadas)
 document.getElementById('seccion-atrasadas').hidden = atrasadas.length === 0
 dibujarLista('lista-proximas', proximas)
 document.getElementById('vacio-proximas').hidden = proximas.length > 0
-
+mostrarResumenSemanal()
 /**
  * Escribe la fecha de hoy como título y una frase que resume cómo vas.
  * @returns {void}
@@ -104,10 +104,33 @@ function dibujarLista(idContenedor, lista) {
   document.getElementById(idContenedor).innerHTML = lista.map((t) => filaTarea(t, materiaPorId[t.subjectId])).join('')
 }
 
-// TODO(equipo): aviso de "resumen de la semana" al abrir el sitio (objetivo 5 del PDF).
-//   1. Si `ajustes.notificationsEnabled` es true y hay entregas esta semana o tareas atrasadas,
-//      mostrar el resumen UNA vez por sesión (puedes guardar una marca en sessionStorage).
-//   2. Usa `mostrarAviso(texto)` de utils.js, o crea un componente nuevo en src/components/.
-//   Las variables `entregasDeLaSemana`, `atrasadas` y `ajustes` de este archivo ya tienen lo necesario.
-void ajustes // (quita esta línea cuando uses `ajustes`)
-void aFecha // (quita esta línea cuando uses `aFecha`)
+/**
+ * Muestra UNA vez por sesión un aviso con el resumen de la semana (objetivo 5 del PDF).
+ * Solo sale si el usuario tiene los avisos activados en Ajustes y hay algo que avisar.
+ * @returns {void}
+ */
+function mostrarResumenSemanal() {
+  if (!ajustes.notificationsEnabled) return
+  if (!entregasDeLaSemana.length && !atrasadas.length) return
+
+  // sessionStorage recuerda datos solo mientras la pestaña esté abierta: al cerrarla se borra.
+  // Así el resumen sale al abrir el sitio, pero no cada vez que se vuelve a "Hoy".
+  try {
+    if (sessionStorage.getItem('resumen-mostrado')) return
+    sessionStorage.setItem('resumen-mostrado', 'si')
+  } catch {
+    // Si el navegador bloquea sessionStorage, el resumen se muestra igual (solo que podría repetirse).
+  }
+
+  const partes = []
+  if (entregasDeLaSemana.length) partes.push(pluralizar(entregasDeLaSemana.length, 'entrega', 'entregas'))
+  if (atrasadas.length) partes.push(`${pluralizar(atrasadas.length, 'tarea atrasada', 'tareas atrasadas')}`)
+
+  let texto = `Resumen de la semana: ${partes.join(' y ')}.`
+
+  if (proximas.length > 0) {
+  texto += ` La próxima: ${proximas[0].title} (${textoVencimiento(proximas[0].dueDate).toLowerCase()}).`
+}
+
+  mostrarAviso(texto, 'info', { fijo: true })
+}
