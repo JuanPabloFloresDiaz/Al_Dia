@@ -4,31 +4,98 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Nueva tarea · Al Día</title>
-    <meta name="description" content="Registra una tarea y, si es grande, divídela en pasos con fechas." />
+    <meta
+      name="description"
+      content="Registra una tarea y, si es grande, divídela en pasos con fechas."
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      #cargador-pagina {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #f2f4f6;
+        color: #1f2937;
+        transition:
+          opacity 0.25s ease,
+          visibility 0.25s ease;
+      }
+      #cargador-pagina .spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 4px solid #d8dee4;
+        border-top-color: #0f766e;
+        border-radius: 50%;
+        animation: carga-giro 0.8s linear infinite;
+      }
+      #cargador-pagina p {
+        margin-top: 0.75rem;
+        font:
+          700 1rem system-ui,
+          sans-serif;
+      }
+      #cargador-pagina.saliendo {
+        opacity: 0;
+        visibility: hidden;
+      }
+      @keyframes carga-giro {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #cargador-pagina .spinner {
+          animation-duration: 1.8s;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="cargador-pagina" role="status" aria-label="Cargando Al Día">
+      <div>
+        <div class="spinner"></div>
+        <p>Al Día</p>
+      </div>
+    </div>
     <div data-componente="navbar" data-activo="tareas"></div>
 
     <main id="contenido" class="mx-auto max-w-3xl px-4 pt-10">
       <p><a href="/tareas.html">Volver a las tareas</a></p>
       <h1 class="mt-3">Nueva tarea</h1>
       <p class="mt-2 text-suave">
-        Escribe qué tienes que entregar y cuándo. Si es grande, divídela en partes y Al Día te propone una fecha para cada una.
+        Escribe qué tienes que entregar y cuándo. Si es grande, divídela en
+        partes y Al Día te propone una fecha para cada una.
       </p>
 
       <form id="form-tarea" class="panel mt-8 grid gap-6" novalidate>
         <div class="campo">
           <label for="tarea-titulo">¿Qué tienes que entregar?</label>
-          <input class="entrada" id="tarea-titulo" name="title" type="text" maxlength="120" required placeholder="Ej.: Leer el libro de Cálculo" />
+          <input
+            class="entrada"
+            id="tarea-titulo"
+            name="title"
+            type="text"
+            maxlength="120"
+            required
+            placeholder="Ej.: Leer el libro de Cálculo"
+          />
           <p class="campo-error" id="error-titulo" role="alert" hidden></p>
         </div>
 
         <div class="grid gap-6 sm:grid-cols-2">
           <div class="campo">
             <label for="tarea-materia">Materia</label>
-            <select class="entrada" id="tarea-materia" name="subjectId" required></select>
-            <p class="campo-ayuda">¿No está? <a href="/materias.html">Agrégala en Materias</a>.</p>
+            <select
+              class="entrada"
+              id="tarea-materia"
+              name="subjectId"
+              required
+            ></select>
+            <p class="campo-ayuda">
+              ¿No está? <a href="/materias.html">Agrégala en Materias</a>.
+            </p>
           </div>
           <div class="campo">
             <label for="tarea-tipo">Tipo de actividad</label>
@@ -43,34 +110,72 @@
 
         <div class="campo sm:max-w-xs">
           <label for="tarea-fecha">Fecha de entrega</label>
-          <input class="entrada" id="tarea-fecha" name="dueDate" type="date" required />
+          <input
+            class="entrada"
+            id="tarea-fecha"
+            name="dueDate"
+            type="date"
+            required
+          />
           <p class="campo-error" id="error-fecha" role="alert" hidden></p>
         </div>
 
         <div class="campo">
           <label class="flex items-center gap-3 !font-normal">
-            <input class="casilla" type="checkbox" id="tarea-avisos" name="notify" />
-            <span><strong>Avisarme del avance de esta tarea</strong><br /><span class="campo-ayuda">Recibirás un aviso cuando pase el 25, 33, 50, 66 y 75 % del tiempo hasta la entrega, y otro si se atrasa. Solo llegan con el sitio abierto.</span></span>
+            <input
+              class="casilla"
+              type="checkbox"
+              id="tarea-avisos"
+              name="notify"
+            />
+            <span
+              ><strong>Avisarme del avance de esta tarea</strong><br /><span
+                class="campo-ayuda"
+                >Recibirás un aviso cuando pase el 25, 33, 50, 66 y 75 % del
+                tiempo hasta la entrega, y otro si se atrasa. Solo llegan con el
+                sitio abierto.</span
+              ></span
+            >
           </label>
         </div>
 
         <!-- División en partes: genera los pasos con fechas repartidas hasta la entrega. -->
         <fieldset class="grid gap-4 border-t border-linea pt-6">
-          <legend class="font-titulo text-xl font-bold">Dividir en partes</legend>
-          <p class="campo-ayuda -mt-2">Útil para un libro de varios capítulos o un proyecto con secciones.</p>
+          <legend class="font-titulo text-xl font-bold">
+            Dividir en partes
+          </legend>
+          <p class="campo-ayuda -mt-2">
+            Útil para un libro de varios capítulos o un proyecto con secciones.
+          </p>
           <div class="grid gap-6 sm:grid-cols-2">
             <div class="campo">
               <label for="dividir-partes">¿En cuántas partes?</label>
-              <input class="entrada" id="dividir-partes" type="number" min="1" max="30" value="1" inputmode="numeric" />
+              <input
+                class="entrada"
+                id="dividir-partes"
+                type="number"
+                min="1"
+                max="30"
+                value="1"
+                inputmode="numeric"
+              />
             </div>
             <div class="campo">
               <label for="dividir-nombre">Cómo se llama cada parte</label>
-              <input class="entrada" id="dividir-nombre" type="text" value="Capítulo" maxlength="40" />
+              <input
+                class="entrada"
+                id="dividir-nombre"
+                type="text"
+                value="Capítulo"
+                maxlength="40"
+              />
               <p class="campo-ayuda">Saldrá como «Capítulo 1», «Capítulo 2»…</p>
             </div>
           </div>
           <div>
-            <button type="button" class="btn-secundario" id="btn-generar-pasos">Generar los pasos</button>
+            <button type="button" class="btn-secundario" id="btn-generar-pasos">
+              Generar los pasos
+            </button>
           </div>
           <ol id="pasos-formulario" class="grid gap-0" aria-live="polite"></ol>
         </fieldset>
@@ -83,6 +188,9 @@
     </main>
 
     <div data-componente="pie"></div>
-    <script type="module" src="/src/controllers/tarea-nueva.controller.js"></script>
+    <script
+      type="module"
+      src="/src/controllers/tarea-nueva.controller.js"
+    ></script>
   </body>
 </html>

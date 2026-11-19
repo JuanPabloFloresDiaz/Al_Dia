@@ -9,10 +9,10 @@
  *   5. Animaciones (con respeto a "reducir movimiento").
  * El resto del diseño (márgenes, columnas, tamaños) se hace en el HTML con clases de Tailwind.
  */
-@import 'tailwindcss';
-@import '@fontsource-variable/bricolage-grotesque';
-@import '@fontsource/atkinson-hyperlegible/400.css';
-@import '@fontsource/atkinson-hyperlegible/700.css';
+@import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource/atkinson-hyperlegible/400.css";
+@import "@fontsource/atkinson-hyperlegible/700.css";
 
 /* ---------- 2. COLORES ---------- */
 /* Tema claro (por defecto). El tema oscuro se activa con <html data-theme="dark">. */
@@ -37,7 +37,7 @@
   color-scheme: light;
 }
 
-:root[data-theme='dark'] {
+:root[data-theme="dark"] {
   --c-fondo: #101215;
   --c-superficie: #181b20;
   --c-tinta: #e9ebef;
@@ -67,8 +67,9 @@
   --color-linea: var(--c-linea);
   --color-acento: var(--c-acento);
   --color-resalte: var(--c-resalte);
-  --font-titulo: 'Bricolage Grotesque Variable', 'Atkinson Hyperlegible', sans-serif;
-  --font-texto: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-titulo:
+    "Bricolage Grotesque Variable", "Atkinson Hyperlegible", sans-serif;
+  --font-texto: "Atkinson Hyperlegible", system-ui, sans-serif;
 }
 
 /* ---------- 3. BASE ---------- */
@@ -144,7 +145,10 @@
     font-size: 1rem;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
   }
   .btn {
     background: var(--c-acento);
@@ -228,7 +232,7 @@
     white-space: nowrap;
   }
   .chip::before {
-    content: '';
+    content: "";
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
@@ -346,7 +350,7 @@
   .enlace-menu:hover {
     background: var(--c-linea);
   }
-  .enlace-menu[aria-current='page'] {
+  .enlace-menu[aria-current="page"] {
     background: var(--c-resalte);
     color: var(--c-sobre-resalte);
   }
@@ -416,6 +420,47 @@
 }
 
 /* ---------- 5. ANIMACIÓN (una sola, al abrir la página) ---------- */
+
+/* Oculta el resumen semanal mientras el usuario escribe, sin desplazar bruscamente el resto de la página. */
+#semana {
+  max-height: 30rem;
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease,
+    max-height 0.35s ease,
+    padding-bottom 0.35s ease;
+}
+
+#semana.semana-buscando {
+  max-height: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  transform: translateY(-0.5rem);
+  overflow: hidden !important;
+}
+
+#semana-titulo {
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease,
+    max-height 0.35s ease,
+    margin-bottom 0.35s ease;
+}
+
+#semana-titulo.semana-buscando {
+  max-height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+  transform: translateY(-0.5rem);
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #semana {
+    transition: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @keyframes entrar {
     from {
@@ -427,10 +472,22 @@
   .entrada-escalonada > * {
     animation: entrar 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
   }
-  .entrada-escalonada > *:nth-child(2) { animation-delay: 0.05s; }
-  .entrada-escalonada > *:nth-child(3) { animation-delay: 0.1s; }
-  .entrada-escalonada > *:nth-child(4) { animation-delay: 0.15s; }
-  .entrada-escalonada > *:nth-child(5) { animation-delay: 0.2s; }
-  .entrada-escalonada > *:nth-child(6) { animation-delay: 0.25s; }
-  .entrada-escalonada > *:nth-child(7) { animation-delay: 0.3s; }
+  .entrada-escalonada > *:nth-child(2) {
+    animation-delay: 0.05s;
+  }
+  .entrada-escalonada > *:nth-child(3) {
+    animation-delay: 0.1s;
+  }
+  .entrada-escalonada > *:nth-child(4) {
+    animation-delay: 0.15s;
+  }
+  .entrada-escalonada > *:nth-child(5) {
+    animation-delay: 0.2s;
+  }
+  .entrada-escalonada > *:nth-child(6) {
+    animation-delay: 0.25s;
+  }
+  .entrada-escalonada > *:nth-child(7) {
+    animation-delay: 0.3s;
+  }
 }

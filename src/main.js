@@ -4,11 +4,11 @@
  * Cada controlador (src/controllers/*.controller.js) empieza llamando a `iniciarPagina()`.
  * Así el menú, el tema y la base de datos se preparan igual en todo el sitio.
  */
-import './styles/main.css'
-import { montarComponentes } from './utils/componentes.js'
-import { abrirBaseDeDatos } from './db/db.js'
-import { obtenerAjustes } from './services/ajustes.service.js'
-import { iniciarCampana } from './components/campana.js'
+import "./styles/main.css";
+import { montarComponentes } from "./utils/componentes.js";
+import { abrirBaseDeDatos } from "./db/db.js";
+import { obtenerAjustes } from "./services/ajustes.service.js";
+import { iniciarCampana } from "./components/campana.js";
 
 /**
  * Aplica el tema visual a toda la página.
@@ -16,7 +16,7 @@ import { iniciarCampana } from './components/campana.js'
  * @returns {void}
  */
 export function aplicarTema(tema) {
-  document.documentElement.dataset.theme = tema === 'dark' ? 'dark' : 'light'
+  document.documentElement.dataset.theme = tema === "dark" ? "dark" : "light";
 }
 
 /**
@@ -24,8 +24,10 @@ export function aplicarTema(tema) {
  * @returns {void}
  */
 function marcarPaginaActiva() {
-  const menu = document.querySelector('nav[data-activo]')
-  menu?.querySelector(`[data-pagina="${menu.dataset.activo}"]`)?.setAttribute('aria-current', 'page')
+  const menu = document.querySelector("nav[data-activo]");
+  menu
+    ?.querySelector(`[data-pagina="${menu.dataset.activo}"]`)
+    ?.setAttribute("aria-current", "page");
 }
 
 /**
@@ -35,11 +37,25 @@ function marcarPaginaActiva() {
  * @returns {Promise<void>}
  */
 export async function iniciarPagina() {
-  montarComponentes()
-  marcarPaginaActiva()
-  await abrirBaseDeDatos()
-  const ajustes = await obtenerAjustes()
-  aplicarTema(ajustes.theme)
+  montarComponentes();
+  marcarPaginaActiva();
+  await abrirBaseDeDatos();
+  const ajustes = await obtenerAjustes();
+  aplicarTema(ajustes.theme);
   // Un fallo en los avisos no debe impedir que la página cargue.
-  iniciarCampana().catch((error) => console.error('[avisos]', error))
+  iniciarCampana().catch((error) => console.error("[avisos]", error));
+  ocultarCargadorPagina();
+}
+
+/**
+ * Oculta suavemente el loader inicial después de preparar datos y tema.
+ * @returns {void}
+ */
+function ocultarCargadorPagina() {
+  const cargador = document.getElementById("cargador-pagina");
+  if (!cargador) return;
+  requestAnimationFrame(() => {
+    cargador.classList.add("saliendo");
+    window.setTimeout(() => cargador.remove(), 300);
+  });
 }

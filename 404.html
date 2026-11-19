@@ -5,12 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Página no encontrada · Al Día</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      #cargador-pagina {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #f2f4f6;
+        color: #1f2937;
+        transition:
+          opacity 0.25s ease,
+          visibility 0.25s ease;
+      }
+      #cargador-pagina .spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 4px solid #d8dee4;
+        border-top-color: #0f766e;
+        border-radius: 50%;
+        animation: carga-giro 0.8s linear infinite;
+      }
+      #cargador-pagina p {
+        margin-top: 0.75rem;
+        font:
+          700 1rem system-ui,
+          sans-serif;
+      }
+      #cargador-pagina.saliendo {
+        opacity: 0;
+        visibility: hidden;
+      }
+      @keyframes carga-giro {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #cargador-pagina .spinner {
+          animation-duration: 1.8s;
+        }
+      }
+    </style>
   </head>
   <body>
+    <div id="cargador-pagina" role="status" aria-label="Cargando Al Día">
+      <div>
+        <div class="spinner"></div>
+        <p>Al Día</p>
+      </div>
+    </div>
     <div data-componente="navbar" data-activo=""></div>
     <main id="contenido" class="mx-auto max-w-3xl px-4 pt-16">
       <h1>Esta página no existe</h1>
-      <p class="mt-4 text-suave">Puede que el enlace esté mal escrito o que la página se haya movido.</p>
+      <p class="mt-4 text-suave">
+        Puede que el enlace esté mal escrito o que la página se haya movido.
+      </p>
       <a href="/index.html" class="btn mt-6">Volver a Hoy</a>
     </main>
     <div data-componente="pie"></div>
