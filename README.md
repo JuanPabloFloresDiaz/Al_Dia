@@ -1,83 +1,194 @@
 # Al Día
 
-Gestor de tareas académicas. Proyecto de **Diseño y Desarrollo de Sitios Web** (UFG, ciclo II-2026).
-Integrantes: Herbert Ayala, Juan Pablo Flores y Guillermo Menjívar. El documento del proyecto está en [`docs/Proyecto_Al_Dia_DDW.pdf`](docs/Proyecto_Al_Dia_DDW.pdf).
+Al Día es un gestor inteligente de tareas académicas desarrollado para la asignatura
+**Diseño y Desarrollo de Sitios Web** de la Universidad Francisco Gavidia,
+correspondiente al ciclo II-2026.
 
-Tecnologías: HTML, CSS (Tailwind), JavaScript, **IndexedDB con Dexie.js**, **Day.js** y **Vite**. No hay servidor ni base de datos externa: todo se guarda en el navegador.
+La aplicación permite organizar materias, crear y administrar tareas, dividir el
+trabajo en pasos, consultar vencimientos y recibir avisos. Toda la información se
+guarda localmente en el navegador mediante IndexedDB; no requiere cuentas ni servidor.
 
-## Cómo ejecutarlo
+**Integrantes:** Herbert Ayala, Juan Pablo Flores y Guillermo Menjívar.
 
-### Con Docker (lo más fácil)
+## Tecnologías
 
-```bash
-docker compose up -d --build            # sitio compilado  -> http://localhost:8085
-docker compose --profile dev up desarrollo   # para programar -> http://localhost:5173 (se recarga al guardar)
-docker compose down                     # apagar
-```
+- HTML5
+- CSS3 con Tailwind CSS
+- JavaScript con ES Modules
+- Vite
+- IndexedDB con Dexie.js
+- Day.js
+- Docker y nginx
 
-Si el puerto está ocupado: `WEB_PORT=9000 docker compose up -d --build`.
+## Funcionalidades
 
-### Sin Docker (necesitas Node 22.12 o superior; el contenedor usa Node 24)
+- Resumen diario y semanal de entregas.
+- Consulta de tareas atrasadas y próximas.
+- Creación, edición y eliminación de tareas.
+- Gestión de materias con nombre y código.
+- División de una tarea en pasos mediante fechas sugeridas.
+- Registro, edición y eliminación del checklist de una tarea.
+- Cálculo automático del avance según los pasos completados.
+- Niveles de urgencia calculados a partir de la fecha de entrega.
+- Filtro combinado de tareas por texto, materia, tipo y estado.
+- Búsqueda de tareas por título o materia en la página principal.
+- Búsqueda de materias por nombre o código.
+- Avisos dentro de la aplicación y avisos del sistema cuando el navegador lo permite.
+- Tema claro y oscuro.
+- Exportación completa de los datos locales en formato JSON.
+- Restablecimiento de materias, tareas, pasos y ajustes a los datos de ejemplo.
+- Loader inicial y animaciones responsivas con soporte para movimiento reducido.
+
+## Requisitos
+
+Para ejecutar el proyecto sin Docker se necesita Node.js 22.12 o superior.
+
+## Ejecución local
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # genera la carpeta dist/
+npm run dev
 ```
 
-## Dónde está cada cosa
+El sitio estará disponible en `http://localhost:5173`.
 
-```
-*.html                    Las páginas (una por pantalla). Solo estructura; sin lógica.
-src/
-  main.js                 Lo que toda página necesita al abrir (menú, tema, base de datos).
-  controllers/            Un JavaScript por página: lee datos, los dibuja y atiende los clics.
-  services/               ÚNICA capa que habla con IndexedDB (materias, tareas, pasos, ajustes).
-  db/db.js                Configuración de IndexedDB y datos de ejemplo.
-  components/             Piezas reutilizables: menú, pie (.html) y filas de tarea/paso (.js).
-  utils/utils.js          Funciones compartidas (fechas con Day.js, urgencia, progreso, escapar HTML, avisos).
-  utils/componentes.js    El motor que pone los componentes .html en cada página.
-  styles/main.css         Colores, tipografía y estilos de botones, campos, chips y filas.
-docs/                     PDF del proyecto y esquema original de la base de datos.
+Para generar la versión de producción:
+
+```bash
+npm run build
 ```
 
-El flujo de una pantalla: **página `.html`** (estructura) → **controlador** (`src/controllers`) → **servicio** (`src/services`) → **IndexedDB** (`src/db/db.js`). Un controlador nunca usa `db` directamente.
+Los archivos finales se generan en `dist/`.
 
-## Qué está hecho y qué falta
+Para previsualizar el resultado compilado:
 
-Hecho: estructura, diseño de todas las pantallas (computadora, celular y tema oscuro), IndexedDB configurada con datos de ejemplo, capa de servicios completa, y las pantallas **muestran** los datos reales.
+```bash
+npm run preview
+```
 
-Falta (la lógica de cada pantalla). Cada punto está marcado en el código como `TODO(equipo)` con los pasos a seguir; búscalo con `Ctrl+Shift+F`.
+## Ejecución con Docker
 
-| Archivo | Qué hay que programar |
-|---|---|
-| `controllers/tarea-nueva.controller.js` | Dividir una tarea en partes con fechas repartidas; validar y guardar tarea con sus pasos |
-| `controllers/tarea.controller.js` | Marcar pasos (y recalcular el avance), agregar/editar pasos, editar y eliminar la tarea |
-| `controllers/tareas.controller.js` | Filtros (texto, materia, tipo, estado) |
-| `controllers/materias.controller.js` | Crear, editar y eliminar materias |
-| `controllers/ajustes.controller.js` | Guardar ajustes, descargar copia de los datos, restablecer datos de ejemplo |
-| `controllers/hoy.controller.js` | Aviso con el resumen de la semana al abrir el sitio |
+Sitio compilado servido por nginx:
 
-Mientras una función esté pendiente, al usarla aparece el aviso «Pendiente de programar: …». Al terminar cada una, **borra la línea `avisarPendiente(...)`**.
+```bash
+docker compose up -d --build
+```
 
-## Reglas del equipo
+Disponible en `http://localhost:8085`.
 
-1. **Comentarios en español, en cada función**, con el formato de este proyecto (JSDoc: qué hace, `@param`, `@returns`). Mira cualquier archivo de `src/services/` como modelo.
-2. **Texto que escribe el usuario → `escaparHtml()`** antes de ponerlo en `innerHTML`. Si no, se puede inyectar código en el sitio.
-3. **Fechas siempre con las funciones de `utils.js`** (usan Day.js). En la base se guardan como texto ISO en UTC.
-4. Si algo lo usas en más de un archivo, va en `utils/utils.js`.
-5. **Cambiar el esquema de IndexedDB**: no edites la versión 1; agrega `db.version(2).stores({...})` en `db/db.js` para no romper los datos que ya tienen los demás en su navegador.
-6. Para ver los datos guardados: DevTools (F12) → pestaña *Application* → *IndexedDB* → `AlDiaDatabase`. Para empezar de cero, borra esa base y recarga.
-7. Trabajen en ramas por funcionalidad (por ejemplo `feat/filtros-tareas`) y fusionen a `main` con Pull Request.
+Entorno de desarrollo con recarga automática:
 
-## Diseño
+```bash
+docker compose --profile dev up desarrollo
+```
 
-La interfaz evita a propósito la estética genérica de páginas «generadas con IA»:
+Disponible en `http://localhost:5173`.
 
-- **Tipografía:** Bricolage Grotesque (títulos) y Atkinson Hyperlegible (texto, pensada para leer bien). Nada de Inter ni de sistema.
-- **Color:** azul cobalto como acento y amarillo resaltador solo para marcar «hoy» y la página actual. Sin degradados morados ni tarjetas grises idénticas.
-- **Estructura:** las tareas son filas separadas por líneas (no tarjetas iguales), y el borde de color indica la urgencia. El estado también se escribe con palabras, no solo con color.
-- **Movimiento:** una sola animación al abrir «Hoy»; se desactiva si el sistema pide reducir movimiento.
-- **Cambiar colores o fuentes:** todo está al inicio de `src/styles/main.css`.
+Para detener los contenedores:
 
-Referencias usadas: la guía `frontend-design` de Anthropic y el proyecto de código abierto *Impeccable* (lista de patrones a evitar).
+```bash
+docker compose down
+```
+
+Los puertos se pueden cambiar al iniciar Docker:
+
+```bash
+WEB_PORT=9000 docker compose up -d --build
+DEV_PORT=5174 docker compose --profile dev up desarrollo
+```
+
+## Estructura del proyecto
+
+```text
+Al_Dia/
+├── *.html                 Páginas y estructura de cada vista
+├── src/
+│   ├── main.js            Inicialización, componentes, tema y base de datos
+│   ├── components/        Componentes HTML y JavaScript reutilizables
+│   ├── controllers/       Coordinación de una vista y sus eventos
+│   ├── services/          Acceso a IndexedDB y operaciones de dominio
+│   ├── db/
+│   │   ├── db.js          Configuración de Dexie
+│   │   └── datos-iniciales.json
+│   ├── styles/
+│   │   └── main.css       Variables visuales, componentes y animaciones
+│   └── utils/
+│       ├── utils.js       Fechas, validaciones, urgencia y avisos
+│       └── componentes.js Carga de componentes HTML compartidos
+├── docs/                  Documento y esquema del proyecto
+├── Dockerfile
+├── docker-compose.yml
+├── vite.config.js
+└── package.json
+```
+
+El flujo de datos es:
+
+**Página HTML → controlador → servicio → IndexedDB**
+
+Los controladores no deben acceder directamente a las tablas de Dexie. Todas las
+operaciones de persistencia se realizan desde `src/services/`.
+
+## Arquitectura
+
+El proyecto aplica separación de responsabilidades:
+
+- Los componentes administran el renderizado y los eventos del DOM.
+- Los controladores coordinan datos y acciones de la página.
+- Los servicios encapsulan las operaciones de IndexedDB.
+- El controlador de filtros contiene reglas de búsqueda independientes del DOM.
+- Las utilidades compartidas evitan duplicar lógica de fechas, textos y avisos.
+- Los criterios de filtrado pueden ampliarse sin modificar el núcleo de búsqueda.
+
+### Almacenamiento local
+
+Dexie administra la base `AlDiaDatabase`. Los stores principales son:
+
+- `subjects`: materias
+- `tasks`: tareas
+- `steps`: pasos o checklist
+- `settings`: tema y preferencias de avisos
+- `notifications`: bandeja de avisos
+
+Para inspeccionar los datos guardados:
+
+1. Abre las herramientas de desarrollo con `F12`.
+2. Selecciona la pestaña **Application**.
+3. Abre **IndexedDB → AlDiaDatabase**.
+
+También puedes restablecer todos los datos desde **Ajustes → Restablecer datos de ejemplo**.
+
+## Persistencia de datos
+
+Al día no utiliza backend ni cuentas de usuario. La información:
+
+- Se conserva entre recargas.
+- Pertenece únicamente al navegador y dispositivo actual.
+- Puede exportarse desde **Ajustes** en un archivo JSON con fecha y hora.
+- Puede eliminarse y volver a sembrarse desde la vista Ajustes.
+
+## Diseño responsive
+
+- Adaptado para escritorio y dispositivos móviles.
+- Navegación y pie compartidos en todas las páginas.
+- Tema claro y oscuro.
+- Campos, listas y filtros adaptables.
+- Loader CSS mostrado durante la preparación inicial.
+- Animaciones reducidas automáticamente si el sistema configura movimiento reducido.
+
+## Convenciones de desarrollo
+
+- Usar JavaScript ES Modules.
+- Documentar módulos y funciones públicas con JSDoc.
+- Mantener los comentarios y nombres de variables claros y descriptivos.
+- Usar las funciones de `src/utils/utils.js` para fechas con Day.js.
+- Escapar contenido escrito por el usuario antes de insertarlo mediante `innerHTML`.
+- No modificar directamente el esquema Dexie de la versión existente: crear una nueva versión al ampliar stores o índices.
+- Ejecutar `npm run build` antes de subir cambios.
+- Trabajar por funcionalidades en ramas independientes y fusionar mediante Pull Request.
+
+## Documentación académica
+
+El documento de proyecto se encuentra en:
+
+[`docs/Proyecto_Al_Dia_DDW.pdf`](docs/Proyecto_Al_Dia_DDW.pdf)
