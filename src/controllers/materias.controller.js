@@ -2,44 +2,73 @@
  * Controlador de la página "Materias" (materias.html).
  * Lista las materias con cuántas tareas tiene cada una, y permite crearlas, editarlas y eliminarlas.
  */
-import { iniciarPagina } from '../main.js'
-import { listarMaterias, crearMateria, actualizarMateria, eliminarMateria } from '../services/materias.service.js'
-import { listarTareas, listarTareasPorMateria } from '../services/tareas.service.js'
-import { escaparHtml, mostrarAviso, pluralizar } from '../utils/utils.js'
+import { iniciarPagina } from "../main.js";
+import {
+  listarMaterias,
+  crearMateria,
+  actualizarMateria,
+  eliminarMateria,
+} from "../services/materias.service.js";
+import {
+  listarTareas,
+  listarTareasPorMateria,
+} from "../services/tareas.service.js";
+import { escaparHtml, mostrarAviso, pluralizar } from "../utils/utils.js";
+import {
+  crearSearchFilter,
+  conectarSearchFilter,
+} from "../components/search-filter.js";
+import { filtrarMaterias } from "./search-filter.controller.js";
 
-await iniciarPagina()
+await iniciarPagina();
 
 /** Materias tal como se dibujaron la última vez (las usan la edición y la validación). */
-let materias = []
+let materias = [];
+let textoBusqueda = "";
 
-await dibujarMaterias()
-document.getElementById('form-materia').addEventListener('submit', alAgregarMateria)
-document.getElementById('lista-materias').addEventListener('click', alPulsarEnMateria)
+const campoBusqueda = crearSearchFilter({
+  id: "filtro-materias",
+  placeholder: "Nombre o código",
+});
+document.getElementById("search-materias").append(campoBusqueda);
+conectarSearchFilter(campoBusqueda.querySelector("input"), (valor) => {
+  textoBusqueda = valor;
+  dibujarMaterias();
+});
+await dibujarMaterias();
+document
+  .getElementById("form-materia")
+  .addEventListener("submit", alAgregarMateria);
+document
+  .getElementById("lista-materias")
+  .addEventListener("click", alPulsarEnMateria);
 
 /**
  * Dibuja la lista de materias. Se vuelve a llamar después de crear, editar o borrar una.
  * @returns {Promise<void>}
  */
 async function dibujarMaterias() {
-  const [lista, tareas] = await Promise.all([listarMaterias(), listarTareas()])
-  materias = lista
-  document.getElementById('lista-materias').innerHTML = materias
+  const [lista, tareas] = await Promise.all([listarMaterias(), listarTareas()]);
+  materias = lista;
+  const materiasVisibles = filtrarMaterias(materias, textoBusqueda);
+  document.getElementById("lista-materias").innerHTML = materiasVisibles
     .map((m) => {
-      const cantidad = tareas.filter((t) => t.subjectId === m.id).length
+      const cantidad = tareas.filter((t) => t.subjectId === m.id).length;
       return `
         <li class="flex items-center justify-between gap-4 border-b border-linea py-4">
           <div>
             <p class="fila-titulo">${escaparHtml(m.name)}</p>
-            <p class="meta">${escaparHtml(m.code)} · ${pluralizar(cantidad, 'tarea', 'tareas')}</p>
+            <p class="meta">${escaparHtml(m.code)} · ${pluralizar(cantidad, "tarea", "tareas")}</p>
           </div>
           <div class="flex gap-2">
             <button type="button" class="btn-secundario !min-h-9 !px-3 !text-sm" data-accion="editar" data-id="${m.id}">Editar</button>
             <button type="button" class="btn-peligro !min-h-9 !px-3 !text-sm" data-accion="eliminar" data-id="${m.id}">Eliminar</button>
           </div>
-        </li>`
+        </li>`;
     })
-    .join('')
-  document.getElementById('vacio-materias').hidden = materias.length > 0
+    .join("");
+  document.getElementById("vacio-materias").hidden =
+    materiasVisibles.length > 0;
 }
 
 /**
@@ -50,10 +79,12 @@ async function dibujarMaterias() {
  * @returns {string} El motivo del error, o '' si todo está bien.
  */
 function validarMateria(name, code, idExcluir) {
-  if (!name) return 'Escribe el nombre de la materia.'
-  if (!/^[A-Z]{2,8}$/.test(code)) return 'El código debe tener de 2 a 8 letras, sin espacios ni tildes.'
-  if (materias.some((m) => m.code === code && m.id !== idExcluir)) return `Ya existe una materia con el código ${code}.`
-  return ''
+  if (!name) return "Escribe el nombre de la materia.";
+  if (!/^[A-Z]{2,8}$/.test(code))
+    return "El código debe tener de 2 a 8 letras, sin espacios ni tildes.";
+  if (materias.some((m) => m.code === code && m.id !== idExcluir))
+    return `Ya existe una materia con el código ${code}.`;
+  return "";
 }
 
 /**
@@ -62,20 +93,23 @@ function validarMateria(name, code, idExcluir) {
  * @returns {Promise<void>}
  */
 async function alAgregarMateria(evento) {
-  evento.preventDefault()
-  const name = document.getElementById('materia-nombre').value.trim()
-  const code = document.getElementById('materia-codigo').value.trim().toUpperCase()
-  const error = document.getElementById('error-materia')
+  evento.preventDefault();
+  const name = document.getElementById("materia-nombre").value.trim();
+  const code = document
+    .getElementById("materia-codigo")
+    .value.trim()
+    .toUpperCase();
+  const error = document.getElementById("error-materia");
 
-  const motivo = validarMateria(name, code)
-  error.textContent = motivo
-  error.hidden = !motivo
-  if (motivo) return
+  const motivo = validarMateria(name, code);
+  error.textContent = motivo;
+  error.hidden = !motivo;
+  if (motivo) return;
 
-  await crearMateria({ name, code })
-  await dibujarMaterias()
-  evento.target.reset()
-  mostrarAviso('Materia agregada')
+  await crearMateria({ name, code });
+  await dibujarMaterias();
+  evento.target.reset();
+  mostrarAviso("Materia agregada");
 }
 
 /**
@@ -85,34 +119,41 @@ async function alAgregarMateria(evento) {
  * @returns {Promise<void>}
  */
 async function alPulsarEnMateria(evento) {
-  const boton = evento.target.closest('[data-accion]')
-  if (!boton) return
-  const id = Number(boton.dataset.id)
-  const fila = boton.closest('li')
-  const accion = boton.dataset.accion
+  const boton = evento.target.closest("[data-accion]");
+  if (!boton) return;
+  const id = Number(boton.dataset.id);
+  const fila = boton.closest("li");
+  const accion = boton.dataset.accion;
 
-  if (accion === 'editar') {
-    const materia = materias.find((m) => m.id === id)
-    fila.outerHTML = filaMateriaEnEdicion(materia)
-  } else if (accion === 'cancelar') {
-    await dibujarMaterias()
-  } else if (accion === 'guardar') {
-    const name = fila.querySelector('[name="nombre"]').value.trim()
-    const code = fila.querySelector('[name="codigo"]').value.trim().toUpperCase()
-    const motivo = validarMateria(name, code, id)
-    if (motivo) return mostrarAviso(motivo, 'error')
+  if (accion === "editar") {
+    const materia = materias.find((m) => m.id === id);
+    fila.outerHTML = filaMateriaEnEdicion(materia);
+  } else if (accion === "cancelar") {
+    await dibujarMaterias();
+  } else if (accion === "guardar") {
+    const name = fila.querySelector('[name="nombre"]').value.trim();
+    const code = fila
+      .querySelector('[name="codigo"]')
+      .value.trim()
+      .toUpperCase();
+    const motivo = validarMateria(name, code, id);
+    if (motivo) return mostrarAviso(motivo, "error");
 
-    await actualizarMateria(id, { name, code })
-    await dibujarMaterias()
-    mostrarAviso('Materia actualizada')
-  } else if (accion === 'eliminar') {
-    const tareas = await listarTareasPorMateria(id)
-    if (tareas.length > 0) return mostrarAviso(`No se puede eliminar: tiene ${pluralizar(tareas.length, 'tarea', 'tareas')}.`, 'error')
+    await actualizarMateria(id, { name, code });
+    await dibujarMaterias();
+    mostrarAviso("Materia actualizada");
+  } else if (accion === "eliminar") {
+    const tareas = await listarTareasPorMateria(id);
+    if (tareas.length > 0)
+      return mostrarAviso(
+        `No se puede eliminar: tiene ${pluralizar(tareas.length, "tarea", "tareas")}.`,
+        "error",
+      );
 
-    if (!confirm('¿Eliminar esta materia?')) return
-    await eliminarMateria(id)
-    await dibujarMaterias()
-    mostrarAviso('Materia eliminada')
+    if (!confirm("¿Eliminar esta materia?")) return;
+    await eliminarMateria(id);
+    await dibujarMaterias();
+    mostrarAviso("Materia eliminada");
   }
 }
 
@@ -130,5 +171,5 @@ function filaMateriaEnEdicion(materia) {
         <button type="button" class="btn !min-h-9 !px-3 !text-sm" data-accion="guardar" data-id="${materia.id}">Guardar</button>
         <button type="button" class="btn-secundario !min-h-9 !px-3 !text-sm" data-accion="cancelar" data-id="${materia.id}">Cancelar</button>
       </div>
-    </li>`
+    </li>`;
 }

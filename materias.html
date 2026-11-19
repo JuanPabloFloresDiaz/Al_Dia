@@ -6,8 +6,17 @@
     <title>Materias · Al Día</title>
     <meta name="description" content="Las materias a las que pertenecen tus tareas." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      #cargador-pagina{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#f2f4f6;color:#1f2937;transition:opacity .25s ease,visibility .25s ease}
+      #cargador-pagina .spinner{width:3rem;height:3rem;border:4px solid #d8dee4;border-top-color:#0f766e;border-radius:50%;animation:carga-giro .8s linear infinite}
+      #cargador-pagina p{margin-top:.75rem;font:700 1rem system-ui,sans-serif}
+      #cargador-pagina.saliendo{opacity:0;visibility:hidden}
+      @keyframes carga-giro{to{transform:rotate(360deg)}}
+      @media(prefers-reduced-motion:reduce){#cargador-pagina .spinner{animation-duration:1.8s}}
+    </style>
   </head>
   <body>
+    <div id="cargador-pagina" role="status" aria-label="Cargando Al Día"><div><div class="spinner"></div><p>Al Día</p></div></div>
     <div data-componente="navbar" data-activo="materias"></div>
 
     <main id="contenido" class="mx-auto max-w-5xl px-4 pt-10">
@@ -17,6 +26,7 @@
       <div class="mt-8 grid gap-10 md:grid-cols-[1fr_20rem]">
         <section aria-labelledby="materias-titulo">
           <h2 id="materias-titulo" class="sr-only">Lista de materias</h2>
+          <div id="search-materias" class="mb-6" role="search" aria-label="Buscar materias"></div>
           <ul id="lista-materias" class="border-t border-linea"></ul>
           <p id="vacio-materias" class="vacio" hidden>Aún no hay materias. Crea la primera con el formulario.</p>
         </section>
