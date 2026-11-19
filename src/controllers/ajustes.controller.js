@@ -1,57 +1,100 @@
 /**
  * Controlador de la página "Ajustes" (ajustes.html).
  *
- * ESTADO: muestra los ajustes guardados en el formulario.
- * PENDIENTE para el equipo: guardar, exportar y restablecer (TODO abajo).
+ * Carga, persiste y gestiona respaldos de los ajustes y datos locales.
  */
-import { iniciarPagina, aplicarTema } from '../main.js'
-import { obtenerAjustes } from '../services/ajustes.service.js'
-import { avisarPendiente } from '../utils/utils.js'
+import { iniciarPagina, aplicarTema } from "../main.js";
+import { obtenerAjustes, guardarAjustes } from "../services/ajustes.service.js";
+import {
+  exportarDatos,
+  restaurarDatosIniciales,
+} from "../services/datos.service.js";
+import { mostrarAviso } from "../utils/utils.js";
 
-await iniciarPagina()
+await iniciarPagina();
 
-const formulario = document.getElementById('form-ajustes')
-const ajustes = await obtenerAjustes()
+const formulario = document.getElementById("form-ajustes");
+const ajustes = await obtenerAjustes();
 
-formulario.elements.theme.value = ajustes.theme
-formulario.elements.notificationsEnabled.checked = ajustes.notificationsEnabled
+formulario.elements.theme.value = ajustes.theme;
+formulario.elements.notificationsEnabled.checked = ajustes.notificationsEnabled;
 
-formulario.addEventListener('submit', alGuardarAjustes)
+formulario.addEventListener("submit", alGuardarAjustes);
 // Vista previa: el tema cambia apenas el usuario lo elige (todavía NO se guarda hasta pulsar el botón).
-formulario.elements.theme.forEach((opcion) => opcion.addEventListener('change', () => aplicarTema(opcion.value)))
-document.getElementById('btn-exportar').addEventListener('click', alExportarDatos)
-document.getElementById('btn-restablecer').addEventListener('click', alRestablecerDatos)
+formulario.elements.theme.forEach((opcion) =>
+  opcion.addEventListener("change", () => aplicarTema(opcion.value)),
+);
+document
+  .getElementById("btn-exportar")
+  .addEventListener("click", alExportarDatos);
+document
+  .getElementById("btn-restablecer")
+  .addEventListener("click", alRestablecerDatos);
 
 /**
  * Se ejecuta al enviar el formulario "Guardar ajustes".
  * @param {SubmitEvent} evento Evento del formulario.
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function alGuardarAjustes(evento) {
-  evento.preventDefault()
-  // TODO(equipo): guardar con `guardarAjustes({ theme, notificationsEnabled })` de ajustes.service.js.
-  //   Valores: `formulario.elements.theme.value` y `formulario.elements.notificationsEnabled.checked`.
-  //   Al terminar escribe "Ajustes guardados" en #ajustes-estado y borra la línea de `avisarPendiente`.
-  avisarPendiente('Guardar los ajustes')
+async function alGuardarAjustes(evento) {
+  evento.preventDefault();
+  const cambios = {
+    theme: formulario.elements.theme.value,
+    notificationsEnabled: formulario.elements.notificationsEnabled.checked,
+  };
+  try {
+    const guardados = await guardarAjustes(cambios);
+    aplicarTema(guardados.theme);
+    document.getElementById("ajustes-estado").textContent =
+      "Ajustes guardados.";
+  } catch (error) {
+    console.error("[ajustes] No se pudieron guardar los ajustes", error);
+    mostrarAviso("No se pudieron guardar los ajustes.", "error");
+  }
 }
 
 /**
  * Se ejecuta al pulsar "Descargar copia de mis datos".
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function alExportarDatos() {
-  // TODO(equipo): descargar un archivo .json con materias, tareas, pasos y ajustes.
-  //   Pista: `db.table('tasks').toArray()` (importa `db` solo aquí o, mejor, crea `exportarDatos()` en un servicio),
-  //   luego `new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' })` y un enlace <a download>.
-  avisarPendiente('Descargar copia de los datos')
+async function alExportarDatos() {
+  try {
+    const datos = await exportarDatos();
+    const blob = new Blob([JSON.stringify(datos, null, 2)], {
+      type: "application/json",
+    });
+    const enlace = document.createElement("a");
+    const fecha = new Date()
+      .toISOString()
+      .replaceAll(":", "-")
+      .replace(/\.\d{3}Z$/, "Z");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = `al-dia-respaldo-${fecha}.json`;
+    enlace.click();
+    URL.revokeObjectURL(enlace.href);
+    mostrarAviso("Copia de tus datos descargada.");
+  } catch (error) {
+    console.error("[ajustes] No se pudieron exportar los datos", error);
+    mostrarAviso("No se pudieron exportar los datos.", "error");
+  }
 }
 
 /**
  * Se ejecuta al pulsar "Restablecer datos de ejemplo".
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function alRestablecerDatos() {
-  // TODO(equipo): pedir confirmación (borra TODO lo que el usuario registró) y llamar a
-  //   `await restablecerBaseDeDatos()` de src/db/db.js. Después recarga con `window.location.reload()`.
-  avisarPendiente('Restablecer los datos de ejemplo')
+async function alRestablecerDatos() {
+  if (
+    !confirm(
+      "Se borrarán tus datos actuales y se cargarán los datos de ejemplo. ¿Continuar?",
+    )
+  )
+    return;
+  try {
+    await restaurarDatosIniciales();
+    window.location.reload();
+  } catch (error) {
+    console.error("[ajustes] No se pudieron restablecer los datos", error);
+    mostrarAviso("No se pudieron restablecer los datos.", "error");
+  }
 }
